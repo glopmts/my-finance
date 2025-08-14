@@ -1,0 +1,24 @@
+import { $Enums } from "@prisma/client";
+
+export interface TransactionProps {
+  userId: string;
+  description?: string | null;
+  type: $Enums.TransactionType;
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  amount: number;
+  date: string;
+  isRecurring: boolean;
+  recurringId?: string | null;
+  categoryId: string | null;
+}
+
+export const TransactionType = {
+  INCOME: "INCOME",
+  EXPENSE: "EXPENSE",
+  TRANSFER: "TRANSFER",
+} as const;
+
+export type TransactionType =
+  (typeof TransactionType)[keyof typeof TransactionType];

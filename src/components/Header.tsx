@@ -1,16 +1,27 @@
 "use client";
 
-import { Loader } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@clerk/nextjs";
+import { Loader, LogOutIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { cn } from "../lib/utils";
 import { trpc } from "../server/trpc/client";
 import AuthModal from "./auth_components/auth-modal";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Button } from "./ui/button";
 
 const Header = () => {
   const { data: userData, refetch } = trpc.auth.me.useQuery();
   const [isClient, setIsClient] = useState(false);
+  const { signOut } = useAuth();
 
   useEffect(() => {
     setIsClient(true);
@@ -44,12 +55,7 @@ const Header = () => {
             </div>
           ) : userData ? (
             <div className="w-auto">
-              <Avatar>
-                <AvatarImage src={userData.image || ""} />
-                <AvatarFallback>
-                  {userData.name?.charAt(0) || "G"}
-                </AvatarFallback>
-              </Avatar>
+              <MenuUser userData={userData} signOut={signOut} />
             </div>
           ) : (
             <AuthModal />
@@ -59,5 +65,48 @@ const Header = () => {
     </header>
   );
 };
+
+type PropsMenu = {
+  userData: {
+    image: string | null;
+    name: string | null;
+    email: string;
+  };
+  signOut: () => void;
+};
+
+function MenuUser({ userData, signOut }: PropsMenu) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger>
+        <Avatar className={cn("w-9 h-9")}>
+          <AvatarImage src={userData.image || ""} />
+          <AvatarFallback>{userData.name?.charAt(0) || "G"}</AvatarFallback>
+        </Avatar>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <div className="flex gap-2 items-center">
+          <Avatar className={cn("w-9 h-9")}>
+            <AvatarImage src={userData.image || ""} />
+            <AvatarFallback>{userData.name?.charAt(0) || "G"}</AvatarFallback>
+          </Avatar>
+          <div className="">
+            <span className="truncate line-clamp-1">
+              {userData.name || "G"}
+            </span>
+            <span className="truncate line-clamp-1">{userData.email}</span>
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <Button variant="destructive" className="w-full" onClick={signOut}>
+            <LogOutIcon className="text-white" size={20} />
+            Sair
+          </Button>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export default Header;

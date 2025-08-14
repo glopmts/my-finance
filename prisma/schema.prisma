@@ -19,29 +19,10 @@ model User {
   lastLogin     DateTime? @updatedAt
 
   // Relacionamentos
-  accounts     Account[]
   categories   Category[]
   transactions Transaction[]
   salaries     Salary[]
   budgets      Budget[]
-}
-
-model Account {
-  id        String      @id @default(cuid())
-  name      String
-  type      AccountType
-  balance   Float       @default(0)
-  currency  String      @default("BRL")
-  isActive  Boolean     @default(true)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-
-  // Relacionamentos
-  userId       String
-  user         User          @relation(fields: [userId], references: [id])
-  transactions Transaction[]
-
-  @@index([userId])
 }
 
 enum AccountType {
@@ -91,13 +72,10 @@ model Transaction {
   // Relacionamentos
   userId     String
   user       User      @relation(fields: [userId], references: [id])
-  accountId  String
-  account    Account   @relation(fields: [accountId], references: [id])
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id])
 
   @@index([userId])
-  @@index([accountId])
   @@index([categoryId])
   @@index([date])
 }

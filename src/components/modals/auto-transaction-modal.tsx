@@ -1,0 +1,337 @@
+"use client";
+
+import type React from "react";
+
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { trpc } from "../../server/trpc/client";
+import type { TransactionType } from "../../types/interfaces";
+import { TransactionType as TransactionTypeEnum } from "../../types/interfaces";
+
+type TransactionData = {
+  userId: string;
+  amount: number;
+  date: string | Date;
+  description?: string | null;
+  type: TransactionType;
+  isRecurring: boolean;
+  recurringId?: string | null;
+  id?: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+type PropsUser = {
+  userId: string;
+  type: "update" | "create";
+  transactionData?: TransactionData;
+  onSuccess?: () => void;
+  refetch: () => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+const AutoTransactionModal = ({
+  type,
+  userId,
+  transactionData,
+  isOpen,
+  onSuccess,
+  refetch,
+  onOpenChange,
+}: PropsUser) => {
+  const [open, setOpen] = useState(isOpen || false);
+  const [loading, setLoading] = useState(false);
+
+  const mutationCreater = trpc.transaction.createrTransactions.useMutation();
+  const mutationUpdate = trpc.transaction.updateTransactions.useMutation();
+
+  const [amount, setAmount] = useState(transactionData?.amount || 0);
+  const [description, setDescription] = useState(
+    transactionData?.description || ""
+  );
+  const [date, setDate] = useState<Date>(
+    transactionData?.date ? new Date(transactionData.date) : new Date()
+  );
+  const [transactionType, setTransactionType] = useState<TransactionType>(
+    transactionData?.type || TransactionTypeEnum.INCOME
+  );
+  const [isRecurring, setIsRecurring] = useState(
+    transactionData?.isRecurring || false
+  );
+  const [recurringId, setRecurringId] = useState(
+    transactionData?.recurringId || ""
+  );
+
+  useEffect(() => {
+    if (isOpen !== undefined) {
+      setOpen(isOpen);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (transactionData && type === "update") {
+      setAmount(transactionData.amount || 0);
+      setDescription(transactionData.description || "");
+      setDate(
+        transactionData.date ? new Date(transactionData.date) : new Date()
+      );
+      setTransactionType(transactionData.type || TransactionTypeEnum.INCOME);
+      setIsRecurring(transactionData.isRecurring || false);
+      setRecurringId(transactionData.recurringId || "");
+    }
+  }, [transactionData, type]);
+
+  const resetForm = () => {
+    if (type === "create") {
+      setAmount(0);
+      setDescription("");
+      setDate(new Date());
+      setTransactionType(TransactionTypeEnum.INCOME);
+      setIsRecurring(false);
+      setRecurringId("");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const payload = {
+        userId,
+        amount,
+        date,
+        description: description || undefined,
+        type: transactionType,
+        isRecurring,
+        recurringId: recurringId || undefined,
+      };
+
+      if (type === "create") {
+        await mutationCreater.mutateAsync?.(payload);
+      } else {
+        await mutationUpdate.mutateAsync?.({
+          userId,
+          id: transactionData?.id as string,
+          amount,
+          date,
+          isRecurring,
+          type: transactionType,
+          description,
+          recurringId,
+        });
+      }
+
+      handleOpenChange(false);
+      resetForm();
+      onSuccess?.();
+      refetch();
+    } catch (error) {
+      console.error("Erro ao processar transação:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isFormValid = amount > 0 && userId && transactionType && date;
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+    if (!newOpen) {
+      resetForm();
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        {type === "create" && (
+          <Button
+            className="bg-cyan-500/35 text-white hover:bg-cyan-500/50 border rounded-3xl"
+            onClick={() => handleOpenChange(true)}
+          >
+            Adicionar Transação
+          </Button>
+        )}
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>
+            {type === "create"
+              ? "Adicionar Nova Transação"
+              : "Editar Transação"}
+          </DialogTitle>
+          <DialogDescription>
+            {type === "create"
+              ? "Preencha os dados para adicionar uma nova transação."
+              : "Atualize as informações da transação."}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="amount">Valor *</Label>
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              min="0"
+              value={amount || ""}
+              onChange={(e) =>
+                setAmount(Number.parseFloat(e.target.value) || 0)
+              }
+              placeholder="0.00"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="type">Tipo *</Label>
+            <Select
+              value={transactionType}
+              onValueChange={(value: TransactionType) =>
+                setTransactionType(value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TransactionTypeEnum.INCOME}>
+                  Receita
+                </SelectItem>
+                <SelectItem value={TransactionTypeEnum.EXPENSE}>
+                  Despesa
+                </SelectItem>
+                <SelectItem value={TransactionTypeEnum.TRANSFER}>
+                  Transferência
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Descrição</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Descrição opcional da transação..."
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Data *</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {date ? (
+                    format(date, "PPP", { locale: ptBR })
+                  ) : (
+                    <span>Selecione uma data</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(selectedDate) =>
+                    selectedDate && setDate(selectedDate)
+                  }
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="recurring"
+              checked={isRecurring}
+              onCheckedChange={setIsRecurring}
+            />
+            <Label htmlFor="recurring">Transação recorrente</Label>
+          </div>
+
+          {isRecurring && (
+            <div className="space-y-2">
+              <Label htmlFor="recurringId">ID de Recorrência</Label>
+              <Input
+                id="recurringId"
+                value={recurringId}
+                onChange={(e) => setRecurringId(e.target.value)}
+                placeholder="ID opcional para agrupar transações recorrentes"
+              />
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              disabled={loading}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={!isFormValid || loading}
+              className="bg-cyan-500 hover:bg-cyan-600"
+            >
+              {loading
+                ? "Processando..."
+                : type === "create"
+                ? "Criar Transação"
+                : "Atualizar Transação"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AutoTransactionModal;
