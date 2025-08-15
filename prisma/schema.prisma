@@ -23,6 +23,7 @@ model User {
   transactions Transaction[]
   salaries     Salary[]
   budgets      Budget[]
+  Fixed        Fixed[]
 }
 
 enum AccountType {
@@ -49,6 +50,7 @@ model Category {
   user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
   budgets      Budget[]
+  Fixed        Fixed[]
 
   @@index([userId])
 }
@@ -68,16 +70,44 @@ model Transaction {
   recurringId String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  isFixed     Boolean         @default(false)
 
-  // Relacionamentos
   userId     String
   user       User      @relation(fields: [userId], references: [id])
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id])
 
+  fixedId String? @unique
+  fixed   Fixed?  @relation(fields: [fixedId], references: [id])
+
   @@index([userId])
   @@index([categoryId])
   @@index([date])
+  @@index([isFixed])
+}
+
+model Fixed {
+  id          String    @id @default(cuid())
+  name        String
+  amount      Float
+  frequency   Frequency @default(MONTHLY)
+  nextDueDate DateTime
+  isActive    Boolean   @default(true)
+  description String?
+
+  transaction Transaction?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([nextDueDate])
 }
 
 enum TransactionType {
@@ -96,7 +126,6 @@ model Salary {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  // Relacionamentos
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
@@ -119,7 +148,6 @@ model Budget {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relacionamentos
   userId     String
   user       User     @relation(fields: [userId], references: [id])
   categoryId String

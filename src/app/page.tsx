@@ -2,8 +2,8 @@
 
 import { Loader } from "lucide-react";
 import Header from "../components/Header";
-import CardsStatistics from "../components/home_components/cards_statistics";
-import TransactionsHome from "../components/home_components/transaction_infor";
+import CardsStatistics from "../components/home_components/cards-statistics";
+import TransactionsHome from "../components/home_components/transactions-home";
 import { trpc } from "../server/trpc/client";
 
 export default function Home() {
@@ -35,7 +35,7 @@ export default function Home() {
       <Header />
       <div className="mx-auto max-w-7xl p-2 mt-4 w-full">
         <CardsStatistics userId={userId} />
-        <div className="">
+        <div className="w-full">
           <TransactionsHome userId={userId} />
         </div>
       </div>

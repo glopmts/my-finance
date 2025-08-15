@@ -77,6 +77,7 @@ export const transactionRouter = router({
             userId,
             amount,
             type,
+            date,
             isRecurring,
             description,
             recurringId,

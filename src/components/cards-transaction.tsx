@@ -1,18 +1,12 @@
 "use client";
 
-import {
-  CalendarDays,
-  HardDriveUploadIcon,
-  Pen,
-  Repeat,
-  Trash2,
-} from "lucide-react";
-import { fnDateLong } from "../lib/formatDate";
+import { CalendarDays, HardDriveUploadIcon, Repeat } from "lucide-react";
 import { formatCurrency } from "../lib/formatS";
 import type { TransactionProps } from "../types/interfaces";
+import { fnDateLong } from "../utils/dateUtils";
+import MenuDropdwonCard from "./MenuDropdwonCards";
 import AutoTransactionModal from "./modals/auto-transaction-modal";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 
 type DataProps = {
@@ -65,16 +59,11 @@ const CardTransaction = ({
       <div className="relative p-4">
         <div className="absolute -top-5 p-2 right-0">
           <div className="flex items-center gap-2">
-            <Button size="sm" onClick={() => handleEdite(transaction)}>
-              <Pen size={20} />
-            </Button>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => handleDelete?.(transaction.id)}
-            >
-              <Trash2 size={20} />
-            </Button>
+            <MenuDropdwonCard
+              handleDelete={handleDelete}
+              handleEdite={handleEdite}
+              transaction={transaction}
+            />
           </div>
         </div>
         <div className="flex justify-between items-center w-full mb-3">
