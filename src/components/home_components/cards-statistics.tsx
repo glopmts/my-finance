@@ -6,7 +6,9 @@ import { trpc } from "../../server/trpc/client";
 import type { TransactionProps } from "../../types/interfaces";
 import { SalaryCard } from "../cards-salary";
 import CardTransaction from "../cards-transaction";
+import { DataAlert } from "../DateAlert";
 import ErrorMessage from "../ErrorMessage";
+import LoaderTypes from "../LoaderTypes";
 import AutoSalaryModal from "../modals/auto-salary-modal";
 import AutoTransactionModal from "../modals/auto-transaction-modal";
 
@@ -60,20 +62,20 @@ const CardsStatistics = ({ userId }: PropsUser) => {
     );
   }
 
-  if (!mockSalaryData) {
+  if (isLoading || loader) {
     return (
-      <div className="w-full h-screen mx-auto max-w-7xl p-2">
-        <span>Nenhum salario encontrado!</span>
+      <div className="w-full h-86">
+        <LoaderTypes types="spine" count={9} />
       </div>
     );
   }
 
+  if (!mockSalaryData) {
+    return <DataAlert message="Nenhum salário encontrado!" />;
+  }
+
   if (!mockTransaction) {
-    return (
-      <div className="w-full h-screen mx-auto max-w-7xl p-2">
-        <span>Nenhuma transferência encontrada!</span>
-      </div>
-    );
+    return <DataAlert message="Nenhuma transferência encontrada!" />;
   }
 
   function calculateTotalExpenses(transactions: TransactionProps[]) {
@@ -94,11 +96,11 @@ const CardsStatistics = ({ userId }: PropsUser) => {
 
   return (
     <div className="w-full h-full">
-      <div className="border-b">
-        <div className="px-6 py-8">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+      <div className="border-b w-full">
+        <div className="px-3 py-8 w-full">
+          <div className="flex items-center justify-between w-full">
+            <div className="space-y-1 w-full">
+              <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-white">
                 Gestão de Salários
               </h1>
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
@@ -106,12 +108,8 @@ const CardsStatistics = ({ userId }: PropsUser) => {
               </p>
             </div>
 
-            <div className="flex items-center">
-              {isLoading ? (
-                <div className="flex items-center justify-center w-10 h-10">
-                  <Loader size={16} className="animate-spin text-zinc-400" />
-                </div>
-              ) : mockSalaryData.length > 0 ? (
+            <div className="flex items-center w-auto">
+              {mockSalaryData.length > 0 ? (
                 <AutoSalaryModal
                   type="update"
                   userId={userId}
@@ -130,7 +128,7 @@ const CardsStatistics = ({ userId }: PropsUser) => {
         </div>
       </div>
 
-      <div className="px-6 py-8">
+      <div className="p-2">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Salary Cards Section */}
           <div className="lg:col-span-2 space-y-4">

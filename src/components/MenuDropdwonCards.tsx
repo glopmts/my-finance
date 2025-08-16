@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, MoreVertical, Trash2 } from "lucide-react";
+import { Edit, MoreVertical, Pin, Trash2 } from "lucide-react";
 import type { TransactionProps } from "../types/interfaces";
 import { Button } from "./ui/button";
 import {
@@ -14,12 +14,16 @@ interface MenuDropdownCardProps {
   transaction: TransactionProps;
   handleEdite: (transaction: TransactionProps) => void;
   handleDelete?: (id: string) => void;
+  handleFixed?: (id: string) => void;
+  isFixed?: boolean;
 }
 
 export default function MenuDropdwonCard({
   transaction,
+  isFixed,
   handleEdite: handleEdit,
   handleDelete,
+  handleFixed,
 }: MenuDropdownCardProps) {
   return (
     <DropdownMenu>
@@ -36,6 +40,10 @@ export default function MenuDropdwonCard({
         <DropdownMenuItem onClick={() => handleEdit(transaction)}>
           <Edit className="mr-2 h-4 w-4" />
           Editar
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleFixed?.(transaction.id)}>
+          <Pin className={isFixed ? "fill-green-500" : ""} />
+          {isFixed ? "Fixado" : "Fixa"}
         </DropdownMenuItem>
         {handleDelete && (
           <DropdownMenuItem

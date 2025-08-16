@@ -2,6 +2,7 @@
 
 import { CalendarDays, HardDriveUploadIcon, Repeat } from "lucide-react";
 import { formatCurrency } from "../lib/formatS";
+import { trpc } from "../server/trpc/client";
 import type { TransactionProps } from "../types/interfaces";
 import { fnDateLong } from "../utils/dateUtils";
 import MenuDropdwonCard from "./MenuDropdwonCards";
@@ -14,6 +15,7 @@ type DataProps = {
   userId: string | null;
   refetch: () => void;
   handleDelete?: (id: string) => void;
+  handleFixed?: (id: string) => void;
   handleEdite: (transaction: TransactionProps) => void;
 };
 
@@ -43,6 +45,29 @@ const CardTransaction = ({
     );
   }
 
+  const { data: isFixedDate, refetch: refetchFixed } =
+    trpc.fixed.isFixed.useQuery(
+      {
+        originId: transaction.id,
+      },
+      {
+        enabled: !!transaction.id,
+      }
+    );
+
+  const isFixed = isFixedDate?.existingFixed;
+
+  const fixedTransactionMutation = trpc.fixed.createFixed.useMutation({
+    onSuccess: () => refetchFixed(),
+    onError: (error) => console.error("Erro ao fixa transação:", error),
+  });
+
+  const handleFixed = (id: string) => {
+    fixedTransactionMutation.mutateAsync({
+      originId: id,
+      userId: userId as string,
+    });
+  };
   const getTypeLabel = (frequency: string) => {
     const labels = {
       INCOME: "RECEITA",
@@ -63,6 +88,8 @@ const CardTransaction = ({
               handleDelete={handleDelete}
               handleEdite={handleEdite}
               transaction={transaction}
+              handleFixed={handleFixed}
+              isFixed={isFixed}
             />
           </div>
         </div>

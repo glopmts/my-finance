@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Frequency } from "@prisma/client";
 import { CalendarDays, DollarSign, Repeat, TrendingUp } from "lucide-react";
 import { formatCurrency } from "../lib/formatS";
+import { getFrequencyLabel } from "../utils/infor-cards";
 
 type SalaryData = {
   userId: string;
@@ -34,16 +35,6 @@ export function SalaryCard({
       month: "short",
       year: "numeric",
     });
-  };
-
-  const getFrequencyLabel = (frequency: string) => {
-    const labels = {
-      MONTHLY: "Mensal",
-      WEEKLY: "Semanal",
-      YEARLY: "Anual",
-      DAILY: "Diário",
-    };
-    return labels[frequency as keyof typeof labels] || frequency;
   };
 
   return (

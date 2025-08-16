@@ -101,11 +101,11 @@ const TransactionsHome = ({ userId }: PropsUser) => {
     return () => clearInterval(interval);
   }, [selectedDate]);
 
+  // functions
   const handleEdit = (transaction: TransactionProps) => {
     setTransactionToEdit(transaction);
     setIsEditModalOpen(true);
   };
-
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setTransactionToEdit(null);
@@ -267,16 +267,18 @@ const TransactionsHome = ({ userId }: PropsUser) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {paginatedTransactions.map((transaction) => (
-            <CardTransaction
-              key={transaction.id}
-              transaction={transaction}
-              refetch={refetch}
-              userId={userId}
-              handleDelete={handleDelete}
-              handleEdite={handleEdit}
-            />
-          ))}
+          {paginatedTransactions.map((transaction) => {
+            return (
+              <CardTransaction
+                key={transaction.id}
+                transaction={transaction}
+                refetch={refetch}
+                userId={userId}
+                handleDelete={handleDelete}
+                handleEdite={handleEdit}
+              />
+            );
+          })}
         </div>
 
         {hasMore && (

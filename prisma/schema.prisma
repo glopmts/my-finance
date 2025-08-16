@@ -70,20 +70,20 @@ model Transaction {
   recurringId String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  isFixed     Boolean         @default(false)
+
+  fixedId String?
+  fixed   Fixed?  @relation(name: "GeneratedTransactions", fields: [fixedId], references: [id])
+
+  originOfFixed Fixed? @relation(name: "OriginTransaction")
 
   userId     String
   user       User      @relation(fields: [userId], references: [id])
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id])
 
-  fixedId String? @unique
-  fixed   Fixed?  @relation(fields: [fixedId], references: [id])
-
   @@index([userId])
   @@index([categoryId])
   @@index([date])
-  @@index([isFixed])
 }
 
 model Fixed {
@@ -95,7 +95,10 @@ model Fixed {
   isActive    Boolean   @default(true)
   description String?
 
-  transaction Transaction?
+  originId String      @unique
+  origin   Transaction @relation(name: "OriginTransaction", fields: [originId], references: [id])
+
+  generatedTransactions Transaction[] @relation(name: "GeneratedTransactions")
 
   userId String
   user   User   @relation(fields: [userId], references: [id])

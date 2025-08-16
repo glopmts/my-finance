@@ -1,8 +1,8 @@
 "use client";
 
-import { Loader } from "lucide-react";
 import Header from "../components/Header";
 import CardsStatistics from "../components/home_components/cards-statistics";
+import FixedHome from "../components/home_components/fixed-cards";
 import TransactionsHome from "../components/home_components/transactions-home";
 import { trpc } from "../server/trpc/client";
 
@@ -14,7 +14,7 @@ export default function Home() {
     return (
       <div className="w-full h-screen">
         <div className="w-full h-full flex items-center justify-center">
-          <Loader size={28} className="animate-spin" />
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" />
         </div>
       </div>
     );
@@ -35,6 +35,9 @@ export default function Home() {
       <Header />
       <div className="mx-auto max-w-7xl p-2 mt-4 w-full">
         <CardsStatistics userId={userId} />
+        <div className="w-full">
+          <FixedHome userId={userId} />
+        </div>
         <div className="w-full">
           <TransactionsHome userId={userId} />
         </div>
