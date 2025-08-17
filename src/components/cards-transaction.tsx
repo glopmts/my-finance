@@ -88,7 +88,7 @@ const CardTransaction = ({
     <Card className="group relative overflow-hidden border-zinc-200/50 bg-zinc-50/30 backdrop-blur-sm transition-all duration-200 hover:border-zinc-300/60 hover:bg-zinc-50/50 hover:shadow-sm dark:border-zinc-800/50 dark:bg-zinc-900/30 dark:hover:border-zinc-700/60 dark:hover:bg-zinc-900/50">
       <div className="absolute inset-0 bg-gradient-to-br from-zinc-50/20 to-transparent dark:from-zinc-800/20" />
 
-      <div className="relative p-4">
+      <div className="relative p-4 w-full">
         <div className="absolute -top-5 p-2 right-0">
           <div className="flex items-center gap-2">
             <MenuDropdwonCard
@@ -114,7 +114,7 @@ const CardTransaction = ({
               </p>
             </div>
           </div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="text-xs text-zinc-500 dark:text-zinc-400 ml-4">
             <div className="flex items-center gap-1.5">
               <CalendarDays className="h-3 w-3" />
               <span> Pagamento: {fnDateLong(new Date(transaction.date))}</span>

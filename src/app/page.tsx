@@ -1,5 +1,6 @@
 "use client";
 
+import AuthModal from "../components/auth_components/auth-modal";
 import Header from "../components/Header";
 import CardsStatistics from "../components/home_components/cards-statistics";
 import FixedHome from "../components/home_components/fixed-cards";
@@ -23,8 +24,9 @@ export default function Home() {
   if (!userId) {
     return (
       <div className="w-full h-screen">
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center flex-col gap-2.5">
           <span>Faça login para ter acesso aos dados!</span>
+          <AuthModal />
         </div>
       </div>
     );

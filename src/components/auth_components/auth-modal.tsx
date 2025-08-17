@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSignIn, useSignUp } from "@clerk/nextjs";
+import { useLogin } from "@/hook/use-login";
+import { useRegister } from "@/hook/use-register";
 import {
   AlertCircle,
   ArrowLeft,
@@ -29,20 +30,21 @@ import {
   Loader2,
   Mail,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { trpc } from "../../server/trpc/client";
 
 type AuthModalProps = {
   children?: React.ReactNode;
   defaultType?: "login" | "register";
+  onSuccess?: () => void;
 };
 
-const AuthModal = ({ children, defaultType = "login" }: AuthModalProps) => {
-  const { isLoaded: signInLoaded, signIn } = useSignIn();
-  const { isLoaded: signUpLoaded, signUp, setActive } = useSignUp();
-
-  const mutation = trpc.auth.createUser.useMutation();
+const AuthModal = ({
+  children,
+  onSuccess,
+  defaultType = "login",
+}: AuthModalProps) => {
+  const loginHook = useLogin();
+  const registerHook = useRegister();
 
   const [open, setOpen] = useState(false);
   const [authType, setAuthType] = useState<"login" | "register">(defaultType);
@@ -50,131 +52,84 @@ const AuthModal = ({ children, defaultType = "login" }: AuthModalProps) => {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"auth" | "verify">("auth");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const router = useRouter();
+  const loading =
+    authType === "login" ? loginHook.loading : registerHook.loading;
+  const error = authType === "login" ? loginHook.error : registerHook.error;
 
   const resetForm = () => {
     setEmailAddress("");
+    setName("");
     setCode("");
-    setError("");
     setStep("auth");
-    setLoading(false);
+    loginHook.resetError();
+    registerHook.resetError();
   };
 
   const handleClose = () => {
     setOpen(false);
-    setTimeout(resetForm, 200); // Reset after animation
+    setTimeout(resetForm, 200);
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signInLoaded || !signIn) return;
+    const result = await loginHook.handleEmailSignIn(emailAddress);
 
-    setLoading(true);
-    setError("");
-
-    try {
-      const result = await signIn.create({
-        identifier: emailAddress,
-      });
-
-      if (result.status === "complete") {
-        handleClose();
-        router.refresh();
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || "Erro ao fazer login. Tente novamente.");
-      }
-    } finally {
-      setLoading(false);
+    if (result.success && result.needsVerification) {
+      setStep("verify");
+      alert("Verifique seu email para o código.");
+    } else if (result.success && !result.needsVerification) {
+      handleClose();
     }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signUpLoaded || !signUp) return;
+    const result = await registerHook.handleSignUp(emailAddress);
 
-    setLoading(true);
-    setError("");
-
-    try {
-      await signUp.create({
-        emailAddress,
-      });
-
-      await signUp.prepareEmailAddressVerification({
-        strategy: "email_code",
-      });
-
+    if (result.success) {
       setStep("verify");
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || "Erro ao criar conta. Tente novamente.");
-      }
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(
+      "[v0] Verify button clicked, authType:",
+      authType,
+      "code:",
+      code
+    );
 
-    // Verifica se todas as dependências estão carregadas
-    if (!signUpLoaded || !signUp || !setActive) {
-      console.error("Dependências de autenticação não carregadas");
-      return;
-    }
+    const result =
+      authType === "login"
+        ? await loginHook.handleVerify(code)
+        : await registerHook.handleVerify(code, name);
 
-    setLoading(true);
-    setError("");
-
-    try {
-      const signUpAttempt = await signUp.attemptEmailAddressVerification({
-        code,
-      });
-
-      if (signUpAttempt.status === "complete") {
-        await setActive({ session: signUpAttempt.createdSessionId });
-        const clerkUser = signUpAttempt.createdUserId;
-        const email = signUpAttempt.emailAddress;
-
-        await mutation.mutateAsync({
-          email: email!,
-          name: name,
-          clerkId: clerkUser as string,
-        });
-
-        router.refresh();
+    if (result.success) {
+      handleClose();
+      if (result.success) {
         handleClose();
-      } else {
-        setError("Processo de verificação não foi concluído. Tente novamente.");
+        if (onSuccess) onSuccess();
+        window.location.reload();
       }
-    } catch (err) {
-      if (err instanceof Error) {
-        const errorMessage =
-          err.message ||
-          "Ocorreu um erro durante a verificação. Tente novamente.";
-        setError(errorMessage);
-      }
-    } finally {
-      setLoading(false);
     }
   };
+
   const switchAuthType = () => {
     setAuthType(authType === "login" ? "register" : "login");
-    setError("");
+    loginHook.resetError();
+    registerHook.resetError();
   };
 
   const goBackToAuth = () => {
     setStep("auth");
     setCode("");
-    setError("");
+    loginHook.resetError();
+    registerHook.resetError();
   };
 
-  if (!signInLoaded || !signUpLoaded) {
+  if (!loginHook.isLoaded || !registerHook.isLoaded) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
@@ -282,7 +237,7 @@ const AuthModal = ({ children, defaultType = "login" }: AuthModalProps) => {
             </Card>
           ) : (
             <form
-              onSubmit={authType === "login" ? handleSignIn : handleSignUp}
+              onSubmit={authType === "login" ? handleEmailSignIn : handleSignUp}
               className="space-y-4"
             >
               <div className="space-y-2">

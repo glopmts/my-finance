@@ -28,6 +28,11 @@ const Header = () => {
     refetch();
   }, [refetch]);
 
+  const handleSignOut = () => {
+    signOut();
+    window.location.reload();
+  };
+
   return (
     <header className="w-full h-auto dark:bg-zinc-900/20 sticky">
       <nav className="p-3 w-full h-full max-w-7xl mx-auto">
@@ -55,7 +60,7 @@ const Header = () => {
             </div>
           ) : userData ? (
             <div className="w-auto">
-              <MenuUser userData={userData} signOut={signOut} />
+              <MenuUser userData={userData} signOut={handleSignOut} />
             </div>
           ) : (
             <AuthModal />
