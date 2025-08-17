@@ -11,8 +11,9 @@ import {
 } from "./ui/dropdown-menu";
 
 interface MenuDropdownCardProps {
-  transaction: TransactionProps;
-  handleEdite: (transaction: TransactionProps) => void;
+  transaction?: TransactionProps;
+  fixedId?: string;
+  handleEdite?: (transaction: TransactionProps) => void;
   handleDelete?: (id: string) => void;
   handleFixed?: (id: string) => void;
   isFixed?: boolean;
@@ -21,6 +22,7 @@ interface MenuDropdownCardProps {
 export default function MenuDropdwonCard({
   transaction,
   isFixed,
+  fixedId,
   handleEdite: handleEdit,
   handleDelete,
   handleFixed,
@@ -37,23 +39,36 @@ export default function MenuDropdwonCard({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        <DropdownMenuItem onClick={() => handleEdit(transaction)}>
-          <Edit className="mr-2 h-4 w-4" />
-          Editar
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleFixed?.(transaction.id)}>
-          <Pin className={isFixed ? "fill-green-500" : ""} />
-          {isFixed ? "Fixado" : "Fixa"}
-        </DropdownMenuItem>
-        {handleDelete && (
-          <DropdownMenuItem
-            onClick={() => handleDelete(transaction.id)}
-            className="text-red-600 dark:text-red-400"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Excluir
+        {handleEdit && (
+          <DropdownMenuItem onClick={() => handleEdit?.(transaction!)}>
+            <Edit className="mr-2 h-4 w-4" />
+            Editar
           </DropdownMenuItem>
         )}
+        {handleFixed && (
+          <DropdownMenuItem onClick={() => handleFixed?.(transaction!.id)}>
+            <Pin className={isFixed ? "fill-green-500" : ""} />
+            {isFixed ? "Fixado" : "Fixa"}
+          </DropdownMenuItem>
+        )}
+        {handleDelete &&
+          (fixedId ? (
+            <DropdownMenuItem
+              onClick={() => handleDelete(fixedId || "")}
+              className="text-red-600 dark:text-red-400"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Excluir Fixado
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem
+              onClick={() => handleDelete(transaction!.id)}
+              className="text-red-600 dark:text-red-400"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Excluir
+            </DropdownMenuItem>
+          ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { CalendarDays, HardDriveUploadIcon, Repeat } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { formatCurrency } from "../lib/formatS";
 import { trpc } from "../server/trpc/client";
 import type { TransactionProps } from "../types/interfaces";
@@ -26,6 +27,8 @@ const CardTransaction = ({
   handleDelete,
   handleEdite,
 }: DataProps) => {
+  const router = useRouter();
+
   if (!transaction) {
     return (
       <Card className="border-zinc-200/50 bg-zinc-50/30 dark:border-zinc-800/50 dark:bg-zinc-900/30 p-4">
@@ -58,7 +61,10 @@ const CardTransaction = ({
   const isFixed = isFixedDate?.existingFixed;
 
   const fixedTransactionMutation = trpc.fixed.createFixed.useMutation({
-    onSuccess: () => refetchFixed(),
+    onSuccess: () => {
+      refetchFixed();
+      router.refresh();
+    },
     onError: (error) => console.error("Erro ao fixa transação:", error),
   });
 
@@ -68,6 +74,7 @@ const CardTransaction = ({
       userId: userId as string,
     });
   };
+
   const getTypeLabel = (frequency: string) => {
     const labels = {
       INCOME: "RECEITA",

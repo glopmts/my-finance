@@ -83,6 +83,7 @@ export const fixedRouter = router({
         }
       }
     ),
+
   isFixed: publicProcedure
     .input(
       z.object({
@@ -117,6 +118,7 @@ export const fixedRouter = router({
         });
       }
     }),
+
   getFixeds: publicProcedure
     .input(
       z.object({
@@ -145,6 +147,54 @@ export const fixedRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Ocorreu um erro ao buscar as transação fixa",
+        });
+      }
+    }),
+
+  deleteFixeds: publicProcedure
+    .input(
+      z.object({
+        fixedId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        if (!input.fixedId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Necessario id Fixado",
+          });
+        }
+
+        const uniq = await db.fixed.findUnique({
+          where: {
+            id: input.fixedId,
+          },
+        });
+
+        if (!uniq) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Fixado não encontrado!",
+          });
+        }
+
+        await db.fixed.delete({
+          where: {
+            id: input.fixedId,
+          },
+        });
+
+        return {
+          status: 200,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Ocorreu um erro ao deletar transação fixa",
         });
       }
     }),

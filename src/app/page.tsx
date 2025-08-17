@@ -34,7 +34,9 @@ export default function Home() {
     <div className="w-full min-h-screen h-full">
       <Header />
       <div className="mx-auto max-w-7xl p-2 mt-4 w-full">
-        <CardsStatistics userId={userId} />
+        <div className="w-full">
+          <CardsStatistics userId={userId} />
+        </div>
         <div className="w-full">
           <FixedHome userId={userId} />
         </div>
