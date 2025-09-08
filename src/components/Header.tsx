@@ -39,17 +39,21 @@ const Header = () => {
         <div className="flex justify-between items-center w-full">
           <Link href="/" passHref>
             <div className="flex gap-2.5 cursor-pointer">
-              <Image
-                src="https://yt3.ggpht.com/Ymv0qwqF2x7qcDAvrE8bdAKxryVNnWi2fNQn_aCL_hSdK4zsySABbqX6sMvr1WJPX_lI9r2qnw=s600-c-k-c0x00ffffff-no-rj-rp-mo"
-                alt="logo"
-                width={36}
-                height={36}
-                sizes="100vw"
-                className="object-cover rounded-md"
-                priority
-              />
+              <div className="relative w-12 h-12">
+                <Image
+                  src="/favicon.ico"
+                  alt="logo"
+                  fill
+                  sizes="100vw"
+                  className="object-cover rounded-md"
+                  priority
+                />
+              </div>
               <div className="">
                 <h2 className="text-xl font-semibold">My Finance</h2>
+                <span className="text-sm text-zinc-300">
+                  Domine suas finanças!
+                </span>
               </div>
             </div>
           </Link>
@@ -84,16 +88,20 @@ function MenuUser({ userData, signOut }: PropsMenu) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Avatar className={cn("w-9 h-9")}>
+        <Avatar className={cn("w-11 h-11 ")}>
           <AvatarImage src={userData.image || ""} />
-          <AvatarFallback>{userData.name?.charAt(0) || "G"}</AvatarFallback>
+          <AvatarFallback className="bg-blue-800/40 border">
+            {userData.name?.charAt(0) || "G"}
+          </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <div className="flex gap-2 items-center">
-          <Avatar className={cn("w-9 h-9")}>
+          <Avatar className={cn("w-10 h-10")}>
             <AvatarImage src={userData.image || ""} />
-            <AvatarFallback>{userData.name?.charAt(0) || "G"}</AvatarFallback>
+            <AvatarFallback className="bg-blue-800/40 border">
+              {userData.name?.charAt(0) || "G"}
+            </AvatarFallback>
           </Avatar>
           <div className="">
             <span className="truncate line-clamp-1">

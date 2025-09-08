@@ -28,7 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -61,6 +60,12 @@ type PropsUser = {
   onOpenChange?: (open: boolean) => void;
 };
 
+interface SavedTitle {
+  id: string;
+  title: string;
+  timestamp: number;
+}
+
 const AutoTransactionModal = ({
   type,
   userId,
@@ -72,14 +77,13 @@ const AutoTransactionModal = ({
 }: PropsUser) => {
   const [open, setOpen] = useState(isOpen || false);
   const [loading, setLoading] = useState(false);
-
-  const mutationCreater = trpc.transaction.createrTransactions.useMutation();
-  const mutationUpdate = trpc.transaction.updateTransactions.useMutation();
+  const [savedTitles, setSavedTitles] = useState<SavedTitle[]>([]);
 
   const [amount, setAmount] = useState(transactionData?.amount || 0);
   const [description, setDescription] = useState(
     transactionData?.description || ""
   );
+
   const [date, setDate] = useState<Date>(
     transactionData?.date ? new Date(transactionData.date) : new Date()
   );
@@ -92,6 +96,9 @@ const AutoTransactionModal = ({
   const [recurringId, setRecurringId] = useState(
     transactionData?.recurringId || ""
   );
+
+  const mutationCreater = trpc.transaction.createrTransactions.useMutation();
+  const mutationUpdate = trpc.transaction.updateTransactions.useMutation();
 
   useEffect(() => {
     if (isOpen !== undefined) {
@@ -112,6 +119,58 @@ const AutoTransactionModal = ({
     }
   }, [transactionData, type]);
 
+  useEffect(() => {
+    const loadSavedTitles = () => {
+      try {
+        const stored = localStorage.getItem("transaction_titles");
+        if (stored) {
+          const titles: SavedTitle[] = JSON.parse(stored);
+          // Ordenar por timestamp (mais recentes primeiro) e pegar até 4
+          const sorted = titles
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .slice(0, 4);
+          setSavedTitles(sorted);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar títulos salvos:", error);
+      }
+    };
+
+    loadSavedTitles();
+  }, []);
+
+  const saveTitleToMemory = (title: string) => {
+    if (!title.trim()) return;
+
+    try {
+      const newTitle: SavedTitle = {
+        id: Date.now().toString(),
+        title: title.trim(),
+        timestamp: Date.now(),
+      };
+
+      // Obter títulos existentes
+      const stored = localStorage.getItem("transaction_titles");
+      let titles: SavedTitle[] = stored ? JSON.parse(stored) : [];
+
+      // Remover duplicatas e limitar a 4
+      titles = titles.filter((t) => t.title !== newTitle.title);
+      titles.unshift(newTitle); // Adicionar no início
+      titles = titles.slice(0, 4); // Manter apenas os 4 mais recentes
+
+      // Salvar no localStorage e state
+      localStorage.setItem("transaction_titles", JSON.stringify(titles));
+      setSavedTitles(titles);
+    } catch (error) {
+      console.error("Erro ao salvar título:", error);
+    }
+  };
+
+  // Handler para selecionar um título salvo
+  const handleTitleSelect = (title: string) => {
+    setDescription(title);
+  };
+
   const resetForm = () => {
     if (type === "create") {
       setAmount(0);
@@ -128,11 +187,15 @@ const AutoTransactionModal = ({
     setLoading(true);
 
     try {
+      const normalizedDescription = description
+        ? description.toUpperCase()
+        : undefined;
+
       const payload = {
         userId,
         amount,
         date,
-        description: description || undefined,
+        description: normalizedDescription,
         type: transactionType,
         isRecurring,
         recurringId: recurringId || undefined,
@@ -148,7 +211,7 @@ const AutoTransactionModal = ({
           date,
           isRecurring,
           type: transactionType,
-          description,
+          description: normalizedDescription,
           recurringId,
         });
       }
@@ -157,6 +220,7 @@ const AutoTransactionModal = ({
       resetForm();
       onSuccess?.();
       refetch();
+      saveTitleToMemory(normalizedDescription || "");
     } catch (error) {
       console.error("Erro ao processar transação:", error);
     } finally {
@@ -243,15 +307,37 @@ const AutoTransactionModal = ({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descrição opcional da transação..."
-              rows={3}
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="description">Título</Label>
+              <Input
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Título brve e simples da transação..."
+                maxLength={10}
+              />
+              <span className="text-sm text-zinc-300">10 Caracteres</span>
+
+              {/* Exibir títulos salvos se houver */}
+              {savedTitles.length > 0 && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm text-zinc-400">Títulos recentes:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {savedTitles.map((saved) => (
+                      <button
+                        key={saved.id}
+                        type="button"
+                        onClick={() => handleTitleSelect(saved.title)}
+                        className="px-3 py-1 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-md transition-colors cursor-pointer"
+                      >
+                        {saved.title}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-2">

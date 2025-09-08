@@ -105,8 +105,11 @@ const CardTransaction = ({
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
               <HardDriveUploadIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
             </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="line-clamp-1 truncate font-semibold">
+            <div className="flex flex-col gap-0.5 w-30">
+              <span
+                className="line-clamp-1 truncate font-semibold"
+                title={transaction.description || "Transaction"}
+              >
                 {transaction.description || "Transaction"}
               </span>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">

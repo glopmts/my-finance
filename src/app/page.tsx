@@ -1,10 +1,11 @@
 "use client";
 
-import AuthModal from "../components/auth_components/auth-modal";
 import Header from "../components/Header";
 import CardsStatistics from "../components/home_components/cards-statistics";
 import FixedHome from "../components/home_components/fixed-cards";
 import TransactionsHome from "../components/home_components/transactions-home";
+import UnauthenticatedHome from "../components/home_components/UnauthenticatedHome";
+import { SendReportButton } from "../components/SendReportButton";
 import { trpc } from "../server/trpc/client";
 
 export default function Home() {
@@ -22,14 +23,7 @@ export default function Home() {
   }
 
   if (!userId) {
-    return (
-      <div className="w-full h-screen">
-        <div className="w-full h-full flex items-center justify-center flex-col gap-2.5">
-          <span>Faça login para ter acesso aos dados!</span>
-          <AuthModal />
-        </div>
-      </div>
-    );
+    return <UnauthenticatedHome />;
   }
 
   return (
@@ -38,6 +32,9 @@ export default function Home() {
       <div className="mx-auto max-w-7xl p-2 mt-4 w-full">
         <div className="w-full">
           <CardsStatistics userId={userId} />
+        </div>
+        <div className="w-full">
+          <SendReportButton />
         </div>
         <div className="w-full">
           <FixedHome userId={userId} />

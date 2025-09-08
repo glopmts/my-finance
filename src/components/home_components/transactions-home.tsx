@@ -56,6 +56,14 @@ const TransactionsHome = ({ userId }: PropsUser) => {
     userId,
   });
 
+  const {
+    data: mockSalaryData,
+    isLoading,
+    error,
+  } = trpc.salary.getSalary.useQuery({
+    userId,
+  });
+
   const deleteTransactionMutation =
     trpc.transaction.deleteTransaction.useMutation({
       onSuccess: () => refetch(),
@@ -139,7 +147,7 @@ const TransactionsHome = ({ userId }: PropsUser) => {
     );
   };
 
-  if (loader) {
+  if (loader || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-zinc-950">
         <div className="flex flex-col items-center gap-3">
@@ -161,6 +169,12 @@ const TransactionsHome = ({ userId }: PropsUser) => {
         message={errorTransaction.message}
         title="Erro ao carregar transações"
       />
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorMessage message={error.message} title="Erro ao carregar salário" />
     );
   }
 
@@ -262,7 +276,13 @@ const TransactionsHome = ({ userId }: PropsUser) => {
       <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-0 py-8">
         <div className="mb-8">
           <div className="max-w-md">
-            <ProgressSpending userId={userId} maxValue={1500} />
+            {mockSalaryData?.map((item) => (
+              <ProgressSpending
+                key={item.id}
+                userId={userId}
+                maxValue={item.amount}
+              />
+            ))}
           </div>
         </div>
 

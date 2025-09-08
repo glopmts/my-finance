@@ -8,6 +8,15 @@ const t = initTRPC.create();
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
+interface MonthlyStats {
+  total: number;
+  highestExpense: number;
+  lowestExpense: number;
+  averageExpense: number;
+  totalTransactions: number;
+  categoryBreakdown?: Record<string, number>;
+}
+
 export const transactionRouter = router({
   getTransactions: publicProcedure
     .input(
@@ -206,6 +215,74 @@ export const transactionRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Erro ao deletar a transação" + error,
+        });
+      }
+    }),
+  getMonthlyStats: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        month: z.number().optional(),
+        year: z.number().optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      try {
+        const { userId, month, year } = input;
+        const now = new Date();
+        const targetMonth = month || now.getMonth() + 1;
+        const targetYear = year || now.getFullYear();
+
+        const startDate = new Date(targetYear, targetMonth - 1, 1);
+        const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59);
+
+        const transactions = await db.transaction.findMany({
+          where: {
+            userId,
+            date: {
+              gte: startDate,
+              lte: endDate,
+            },
+            type: TransactionType.EXPENSE, // Apenas gastos
+          },
+          orderBy: {
+            amount: "desc",
+          },
+        });
+
+        if (transactions.length === 0) {
+          return {
+            message: "Nenhuma transação encontrada para o período",
+            stats: null,
+          };
+        }
+
+        const total = transactions.reduce(
+          (sum, transaction) => sum + transaction.amount,
+          0
+        );
+        const highestExpense = transactions[0]?.amount || 0;
+        const lowestExpense =
+          transactions[transactions.length - 1]?.amount || 0;
+        const averageExpense = total / transactions.length;
+
+        const stats: MonthlyStats = {
+          total,
+          highestExpense,
+          lowestExpense,
+          averageExpense,
+          totalTransactions: transactions.length,
+        };
+
+        return {
+          message: "Estatísticas geradas com sucesso",
+          stats,
+          transactions: transactions.slice(0, 10), // Top 10 transações
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Erro ao gerar estatísticas: " + error,
         });
       }
     }),
