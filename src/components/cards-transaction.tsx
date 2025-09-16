@@ -10,6 +10,7 @@ import MenuDropdwonCard from "./MenuDropdwonCards";
 import AutoTransactionModal from "./modals/auto-transaction-modal";
 import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
 
 type DataProps = {
   transaction?: TransactionProps;
@@ -18,11 +19,15 @@ type DataProps = {
   handleDelete?: (id: string) => void;
   handleFixed?: (id: string) => void;
   handleEdite: (transaction: TransactionProps) => void;
+  isSelected?: boolean;
+  onSelect?: () => void;
 };
 
 const CardTransaction = ({
   transaction,
   userId,
+  isSelected = false,
+  onSelect,
   refetch,
   handleDelete,
   handleEdite,
@@ -84,13 +89,39 @@ const CardTransaction = ({
     return labels[frequency as keyof typeof labels] || frequency;
   };
 
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect?.();
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) return;
+
+    const interactiveElements = ["BUTTON", "A", "INPUT", "SELECT", "TEXTAREA"];
+    if (!interactiveElements.includes(e.target.tagName)) {
+      onSelect?.();
+    }
+  };
+
   return (
-    <Card className="group relative overflow-hidden border-zinc-200/50 bg-zinc-50/30 backdrop-blur-sm transition-all duration-200 hover:border-zinc-300/60 hover:bg-zinc-50/50 hover:shadow-sm dark:border-zinc-800/50 dark:bg-zinc-900/30 dark:hover:border-zinc-700/60 dark:hover:bg-zinc-900/50">
+    <Card
+      className={`group relative overflow-hidden border-zinc-200/50 bg-zinc-50/30 backdrop-blur-sm transition-all duration-200 hover:border-zinc-300/60 hover:bg-zinc-50/50 hover:shadow-sm dark:border-zinc-800/50 dark:bg-zinc-900/30 dark:hover:border-zinc-700/60 dark:hover:bg-zinc-900/50 ${
+        isSelected ? "ring-2 ring-blue-500 border-blue-500" : ""
+      }`}
+      onClick={handleCardClick}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-zinc-50/20 to-transparent dark:from-zinc-800/20" />
 
       <div className="relative p-4 w-full">
-        <div className="absolute -top-5 p-2 right-0">
-          <div className="flex items-center gap-2">
+        <div className="absolute -top-5 p-2 px-6 right-0 w-full">
+          <div className="flex items-center justify-between gap-2">
+            <div className="">
+              <Checkbox
+                checked={isSelected}
+                onClick={handleCheckboxClick}
+                onCheckedChange={() => onSelect?.()}
+              />
+            </div>
             <MenuDropdwonCard
               handleDelete={handleDelete}
               handleEdite={handleEdite}
@@ -100,6 +131,7 @@ const CardTransaction = ({
             />
           </div>
         </div>
+
         <div className="flex justify-between items-center w-full mb-3">
           <div className="flex items-center gap-1.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">

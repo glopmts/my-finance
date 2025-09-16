@@ -16,10 +16,13 @@ import {
   ArrowRight,
   Calendar,
   ChevronDown,
+  DollarSign,
   Loader2,
+  Trash2,
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { TransactionProps } from "../../types/interfaces";
 import CardTransaction from "../cards-transaction";
 import ErrorMessage from "../ErrorMessage";
@@ -35,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { UploadPage } from "./uploda-transactions";
 
 type PropsUser = {
   userId: string;
@@ -46,6 +50,10 @@ const TransactionsHome = ({ userId }: PropsUser) => {
   const [transactionToEdit, setTransactionToEdit] =
     useState<TransactionProps | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTransactions, setSelectedTransactions] = useState<string[]>(
+    []
+  );
+  const [isSelecting10, setIsSelecting10] = useState(false);
 
   const {
     data: allTransactions,
@@ -63,6 +71,9 @@ const TransactionsHome = ({ userId }: PropsUser) => {
   } = trpc.salary.getSalary.useQuery({
     userId,
   });
+
+  const deleteMultipleTransactions =
+    trpc.transaction.deleteTransactionMultiplos.useMutation();
 
   const deleteTransactionMutation =
     trpc.transaction.deleteTransaction.useMutation({
@@ -132,6 +143,58 @@ const TransactionsHome = ({ userId }: PropsUser) => {
   const handleDateChange = (months: number) => {
     setSelectedDate(addMonths(selectedDate, months));
     setTransactionsToShow(12);
+  };
+
+  const handleSelect10Transactions = () => {
+    if (isSelecting10) {
+      setSelectedTransactions([]);
+      setIsSelecting10(false);
+    } else {
+      const first10Ids = paginatedTransactions
+        .slice(0, 10)
+        .map((transaction) => transaction.id);
+
+      setSelectedTransactions(first10Ids);
+      setIsSelecting10(true);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedTransactions.length > 0) {
+      handleDeleteMultiple(selectedTransactions);
+    }
+  };
+
+  const handleDeleteMultiple = async (selectedIds: string[]) => {
+    try {
+      const result = await deleteMultipleTransactions.mutateAsync({
+        transactionIds: selectedIds,
+        userId: userId,
+      });
+
+      if (result.status === 200) {
+        toast.success(
+          `${selectedIds.length} transações deletadas com sucesso!`
+        );
+        await refetch();
+        setSelectedTransactions([]);
+        setIsSelecting10(false);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(`Erro ao deletar transações: ${error.message}`);
+      } else {
+        toast.error("Erro desconhecido ao deletar transações");
+      }
+    }
+  };
+  const handleSelectTransaction = (id: string) => {
+    setSelectedTransactions((prev) =>
+      prev.includes(id)
+        ? prev.filter((transactionId) => transactionId !== id)
+        : [...prev, id]
+    );
+    setIsSelecting10(false);
   };
 
   const resetToCurrentMonth = () => {
@@ -274,7 +337,7 @@ const TransactionsHome = ({ userId }: PropsUser) => {
       </div>
 
       <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-0 py-8">
-        <div className="mb-8">
+        <div className="mb-8 flex flex-col md:flex-row gap-3 justify-between w-full">
           <div className="max-w-md">
             {mockSalaryData?.map((item) => (
               <ProgressSpending
@@ -284,21 +347,62 @@ const TransactionsHome = ({ userId }: PropsUser) => {
               />
             ))}
           </div>
+          <UploadPage />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {paginatedTransactions.map((transaction) => {
-            return (
-              <CardTransaction
-                key={transaction.id}
-                transaction={transaction}
-                refetch={refetch}
-                userId={userId}
-                handleDelete={handleDelete}
-                handleEdite={handleEdit}
-              />
-            );
-          })}
+        <div className="pb-6">
+          <div className="pb-4 flex items-center gap-2">
+            <div className="border rounded-full bg-gray-300 dark:bg-zinc-900 p-2">
+              <DollarSign size={20} />
+            </div>
+            <h2 className="text-2xl font-semibold">Transações</h2>
+          </div>
+          <div className="pb-4 flex gap-2.5">
+            <Button
+              variant={isSelecting10 ? "default" : "outline"}
+              onClick={handleSelect10Transactions}
+              className={
+                isSelecting10
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-transparent"
+              }
+            >
+              {isSelecting10 ? "Desmarcar 10" : "Selecionar 10 Transações"}
+            </Button>
+
+            {selectedTransactions.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleDeleteSelected}
+                disabled={deleteMultipleTransactions.isPending}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleteMultipleTransactions.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : null}
+                <div className="flex items-center gap-2">
+                  <Trash2 size={20} />
+                  Deletar ({selectedTransactions.length})
+                </div>
+              </Button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {paginatedTransactions.map((transaction) => {
+              return (
+                <CardTransaction
+                  key={transaction.id}
+                  transaction={transaction}
+                  refetch={refetch}
+                  userId={userId}
+                  handleDelete={handleDelete}
+                  handleEdite={handleEdit}
+                  isSelected={selectedTransactions.includes(transaction.id)}
+                  onSelect={() => handleSelectTransaction(transaction.id)}
+                />
+              );
+            })}
+          </div>
         </div>
 
         {hasMore && (

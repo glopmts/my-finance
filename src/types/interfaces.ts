@@ -1,4 +1,4 @@
-import { $Enums } from "@prisma/client";
+import { $Enums, Transaction } from "@prisma/client";
 
 export interface TransactionProps {
   userId: string;
@@ -12,6 +12,13 @@ export interface TransactionProps {
   isRecurring: boolean;
   recurringId?: string | null;
   categoryId: string | null;
+}
+
+export interface UploadResponse {
+  message: string;
+  transactions: Transaction[];
+  count: number;
+  fileType: string;
 }
 
 export const TransactionType = {

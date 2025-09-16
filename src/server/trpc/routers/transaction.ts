@@ -201,6 +201,12 @@ export const transactionRouter = router({
           });
         }
 
+        await db.fixed.delete({
+          where: {
+            originId: transactionId,
+          },
+        });
+
         await db.transaction.delete({
           where: {
             id: transactionId,
@@ -215,6 +221,89 @@ export const transactionRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Erro ao deletar a transação" + error,
+        });
+      }
+    }),
+  deleteTransactionMultiplos: publicProcedure
+    .input(
+      z.object({
+        transactionIds: z.array(z.string()),
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const { transactionIds, userId } = input;
+
+        if (!userId || transactionIds.length === 0) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Necessário userId e pelo menos uma transação para deletar!",
+          });
+        }
+
+        const transactions = await db.transaction.findMany({
+          where: {
+            id: {
+              in: transactionIds,
+            },
+          },
+          select: {
+            id: true,
+            userId: true,
+          },
+        });
+
+        if (transactions.length !== transactionIds.length) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Uma ou mais transações não foram encontradas!",
+          });
+        }
+
+        const unauthorizedTransactions = transactions.filter(
+          (transaction) => transaction.userId !== userId
+        );
+
+        if (unauthorizedTransactions.length > 0) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Sem permissão para deletar uma ou mais transações!",
+          });
+        }
+
+        await db.fixed.deleteMany({
+          where: {
+            originId: {
+              in: transactionIds,
+            },
+            userId: userId,
+          },
+        });
+
+        await db.transaction.deleteMany({
+          where: {
+            id: {
+              in: transactionIds,
+            },
+            userId: userId,
+          },
+        });
+
+        return {
+          status: 200,
+          message: `${transactionIds.length} transações deletadas com sucesso!`,
+          deletedCount: transactionIds.length,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Erro ao deletar as transações: " + error,
         });
       }
     }),

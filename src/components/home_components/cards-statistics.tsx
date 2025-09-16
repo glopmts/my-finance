@@ -1,9 +1,9 @@
 "use client";
 
+import { trpc } from "@/server/trpc/client";
+import type { TransactionProps } from "@/types/interfaces";
 import { Loader } from "lucide-react";
 import { useState } from "react";
-import { trpc } from "../../server/trpc/client";
-import type { TransactionProps } from "../../types/interfaces";
 import { SalaryCard } from "../cards-salary";
 import CardTransaction from "../cards-transaction";
 import { DataAlert } from "../DateAlert";

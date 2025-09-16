@@ -28,9 +28,11 @@ const Header = () => {
     refetch();
   }, [refetch]);
 
-  const handleSignOut = () => {
-    signOut();
-    window.location.reload();
+  const handleSignOut = async () => {
+    await signOut();
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
   };
 
   return (

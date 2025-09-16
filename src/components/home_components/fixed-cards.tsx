@@ -99,11 +99,14 @@ const FixedHome = ({ userId }: Props) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900 ring-1 ring-zinc-200 dark:ring-zinc-800">
+                  <div className="flex h-10 w-10 p-3 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900 ring-1 ring-zinc-200 dark:ring-zinc-800">
                     <DollarSign className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="font-medium text-zinc-900 dark:text-white">
+                    <h3
+                      className="font-medium text-zinc-900 dark:text-white line-clamp-1"
+                      title={c.description || "Salário"}
+                    >
                       {c.description || "Salário"}
                     </h3>
                     <p className="text-xs text-zinc-400 dark:text-zinc-500 font-mono">
