@@ -338,7 +338,7 @@ const TransactionsHome = ({ userId }: PropsUser) => {
 
       <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-0 py-8">
         <div className="mb-8 flex flex-col md:flex-row gap-3 justify-between w-full">
-          <div className="max-w-md">
+          <div className="flex-1 md:mr-3">
             {mockSalaryData?.map((item) => (
               <ProgressSpending
                 key={item.id}
