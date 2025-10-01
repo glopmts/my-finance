@@ -45,7 +45,11 @@ const FixedHome = ({ userId }: Props) => {
   }
 
   if (error) {
-    return <ErrorMessage message={error.message} title="Error fixeds" />;
+    return (
+      <div className="mt-4">
+        <ErrorMessage message={error.message} title="Error fixeds" />
+      </div>
+    );
   }
 
   if (!fixeds || fixeds.length === 0) {

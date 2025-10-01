@@ -2,6 +2,7 @@
 
 import { trpc } from "@/server/trpc/client";
 import type { TransactionProps } from "@/types/interfaces";
+import { endOfMonth, isWithinInterval, parseISO, startOfMonth } from "date-fns";
 import { Loader } from "lucide-react";
 import { useState } from "react";
 import { SalaryCard } from "../cards-salary";
@@ -31,7 +32,7 @@ const CardsStatistics = ({ userId }: PropsUser) => {
     isLoading: loader,
     error: errorTransaction,
     refetch: refetchTransaction,
-  } = trpc.transaction.getTransactions.useQuery({
+  } = trpc.transaction.getTransactionsType.useQuery({
     userId,
   });
 
@@ -47,6 +48,19 @@ const CardsStatistics = ({ userId }: PropsUser) => {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setTransactionToEdit(null);
+  };
+
+  const filterTransactionsByMonth = (
+    transactions: TransactionProps[],
+    date: Date
+  ) => {
+    const start = startOfMonth(date);
+    const end = endOfMonth(date);
+
+    return transactions.filter((transaction) => {
+      const transactionDate = parseISO(transaction.date);
+      return isWithinInterval(transactionDate, { start, end });
+    });
   };
 
   if (error) {
@@ -135,6 +149,7 @@ const CardsStatistics = ({ userId }: PropsUser) => {
             {mockSalaryData?.map((card) => (
               <SalaryCard
                 key={card.id}
+                userId={userId}
                 salary={card}
                 progressValue={progressValue}
                 isOverLimit={isOverLimit}

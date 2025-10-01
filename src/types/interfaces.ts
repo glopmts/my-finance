@@ -1,4 +1,4 @@
-import { $Enums, Transaction } from "@prisma/client";
+import { $Enums, CategoryEnum, Transaction } from "@prisma/client";
 
 export interface TransactionProps {
   userId: string;
@@ -11,7 +11,8 @@ export interface TransactionProps {
   date: string;
   isRecurring: boolean;
   recurringId?: string | null;
-  categoryId: string | null;
+  category: CategoryEnum;
+  financialGoalsId?: string | null;
 }
 
 export interface UploadResponse {

@@ -26,7 +26,7 @@ type PropsProgress = {
 const ProgressSpending = ({ userId, maxValue = 10000 }: PropsProgress) => {
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
   const { data: transactions, isLoading } =
-    trpc.transaction.getTransactions.useQuery({ userId });
+    trpc.transaction.getTransactionsType.useQuery({ userId });
 
   const handleMonthChange = (increment: number) => {
     const newDate = addMonths(selectedMonth, increment);

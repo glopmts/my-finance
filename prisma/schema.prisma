@@ -19,11 +19,11 @@ model User {
   lastLogin     DateTime? @updatedAt
 
   // Relacionamentos
-  categories   Category[]
-  transactions Transaction[]
-  salaries     Salary[]
-  budgets      Budget[]
-  Fixed        Fixed[]
+  transactions   Transaction[]
+  salaries       Salary[]
+  budgets        Budget[]
+  Fixed          Fixed[]
+  FinancialGoals FinancialGoals[]
 }
 
 enum AccountType {
@@ -35,31 +35,6 @@ enum AccountType {
   OTHER
 }
 
-model Category {
-  id        String       @id @default(cuid())
-  name      String
-  color     String?
-  icon      String?
-  type      CategoryType @default(EXPENSE)
-  isActive  Boolean      @default(true)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-
-  // Relacionamentos
-  userId       String
-  user         User          @relation(fields: [userId], references: [id])
-  transactions Transaction[]
-  budgets      Budget[]
-  Fixed        Fixed[]
-
-  @@index([userId])
-}
-
-enum CategoryType {
-  INCOME
-  EXPENSE
-}
-
 model Transaction {
   id          String              @id @default(cuid())
   amount      Float
@@ -67,48 +42,40 @@ model Transaction {
   description String?
   type        TransactionType     @default(INCOME)
   typeFile    TransactionTypeFile @default(NULL)
-
-  isRecurring Boolean @default(false)
-  isProcessed Boolean @default(false)
-
+  isRecurring Boolean             @default(false)
+  isProcessed Boolean             @default(false)
   recurringId String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  category    CategoryEnum        @default(EDUCATION)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
-  fixedId String?
-  fixed   Fixed?  @relation(name: "GeneratedTransactions", fields: [fixedId], references: [id])
+  fixedId       String?
+  fixed         Fixed?  @relation(name: "GeneratedTransactions", fields: [fixedId], references: [id])
+  originOfFixed Fixed?  @relation(name: "OriginTransaction")
 
-  originOfFixed Fixed? @relation(name: "OriginTransaction")
-
-  userId     String
-  user       User      @relation(fields: [userId], references: [id])
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id])
+  userId           String
+  user             User            @relation(fields: [userId], references: [id])
+  FinancialGoals   FinancialGoals? @relation(fields: [financialGoalsId], references: [id])
+  financialGoalsId String?
 
   @@index([userId])
-  @@index([categoryId])
   @@index([date])
 }
 
 model Fixed {
-  id          String    @id @default(cuid())
-  name        String
-  amount      Float
-  frequency   Frequency @default(MONTHLY)
-  nextDueDate DateTime
-  isActive    Boolean   @default(true)
-  description String?
-
-  originId String      @unique
-  origin   Transaction @relation(name: "OriginTransaction", fields: [originId], references: [id])
-
+  id                    String        @id @default(cuid())
+  name                  String
+  amount                Float
+  frequency             Frequency     @default(MONTHLY)
+  nextDueDate           DateTime
+  isActive              Boolean       @default(true)
+  description           String?
+  originId              String        @unique
+  origin                Transaction   @relation(name: "OriginTransaction", fields: [originId], references: [id])
   generatedTransactions Transaction[] @relation(name: "GeneratedTransactions")
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
-
-  categoryId String?
-  category   Category? @relation(fields: [categoryId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -117,10 +84,36 @@ model Fixed {
   @@index([nextDueDate])
 }
 
-enum TransactionType {
-  INCOME
+model FinancialGoals {
+  id            String    @id @default(cuid())
+  name          String
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  month         Int
+  year          Int
+  isCompleted   Boolean   @default(false)
+  completedAt   DateTime?
+  type          GoalType  @default(EXPENSE)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  transactions Transaction[]
+
+  salaryId String?
+  salary   Salary? @relation(fields: [salaryId], references: [id])
+
+  @@unique([userId, month, year, type])
+  @@index([userId])
+  @@index([month, year])
+}
+
+enum GoalType {
   EXPENSE
-  TRANSFER
+  SAVING
+  INVESTMENT
 }
 
 model Salary {
@@ -133,10 +126,31 @@ model Salary {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  userId         String
+  user           User             @relation(fields: [userId], references: [id])
+  FinancialGoals FinancialGoals[]
+
+  @@index([userId])
+}
+
+model Budget {
+  id        String   @id @default(cuid())
+  amount    Float
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
   @@index([userId])
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
 }
 
 enum Frequency {
@@ -153,19 +167,15 @@ enum TransactionTypeFile {
   NULL
 }
 
-model Budget {
-  id        String   @id @default(cuid())
-  amount    Float
-  startDate DateTime
-  endDate   DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
-
-  @@index([userId])
-  @@index([categoryId])
+enum CategoryEnum {
+  TRANSPORTATION
+  FOOD
+  ACCOMMODATION
+  ENTERTAINMENT
+  HEALTHCARE
+  EDUCATION
+  UTILITIES
+  INVESTMENTS
+  SHOPPING
+  OTHER
 }

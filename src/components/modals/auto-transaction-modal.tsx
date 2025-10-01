@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { CategoryEnum } from "@prisma/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
@@ -36,29 +37,10 @@ import { useEffect, useState } from "react";
 import { trpc } from "../../server/trpc/client";
 import type { TransactionType } from "../../types/interfaces";
 import { TransactionType as TransactionTypeEnum } from "../../types/interfaces";
-
-type TransactionData = {
-  userId: string;
-  amount: number;
-  date: string | Date;
-  description?: string | null;
-  type: TransactionType;
-  isRecurring: boolean;
-  recurringId?: string | null;
-  id?: string;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-type PropsUser = {
-  userId: string;
-  type: "update" | "create";
-  transactionData?: TransactionData;
-  onSuccess?: () => void;
-  refetch: () => void;
-  isOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
-};
+import {
+  CATEGORY_TRANSLATIONS,
+  PropsUser,
+} from "../../types/transaction-modal-types";
 
 interface SavedTitle {
   id: string;
@@ -73,6 +55,7 @@ const AutoTransactionModal = ({
   isOpen,
   onSuccess,
   refetch,
+  refetchTypes,
   onOpenChange,
 }: PropsUser) => {
   const [open, setOpen] = useState(isOpen || false);
@@ -89,6 +72,9 @@ const AutoTransactionModal = ({
   );
   const [transactionType, setTransactionType] = useState<TransactionType>(
     transactionData?.type || TransactionTypeEnum.INCOME
+  );
+  const [transactionCategory, setTransactionCategory] = useState<CategoryEnum>(
+    transactionData?.category || CategoryEnum.OTHER
   );
   const [isRecurring, setIsRecurring] = useState(
     transactionData?.isRecurring || false
@@ -114,6 +100,7 @@ const AutoTransactionModal = ({
         transactionData.date ? new Date(transactionData.date) : new Date()
       );
       setTransactionType(transactionData.type || TransactionTypeEnum.INCOME);
+      setTransactionCategory(transactionData.category || CategoryEnum.OTHER);
       setIsRecurring(transactionData.isRecurring || false);
       setRecurringId(transactionData.recurringId || "");
     }
@@ -149,16 +136,13 @@ const AutoTransactionModal = ({
         timestamp: Date.now(),
       };
 
-      // Obter títulos existentes
       const stored = localStorage.getItem("transaction_titles");
       let titles: SavedTitle[] = stored ? JSON.parse(stored) : [];
 
-      // Remover duplicatas e limitar a 4
       titles = titles.filter((t) => t.title !== newTitle.title);
-      titles.unshift(newTitle); // Adicionar no início
-      titles = titles.slice(0, 4); // Manter apenas os 4 mais recentes
+      titles.unshift(newTitle);
+      titles = titles.slice(0, 4);
 
-      // Salvar no localStorage e state
       localStorage.setItem("transaction_titles", JSON.stringify(titles));
       setSavedTitles(titles);
     } catch (error) {
@@ -166,7 +150,6 @@ const AutoTransactionModal = ({
     }
   };
 
-  // Handler para selecionar um título salvo
   const handleTitleSelect = (title: string) => {
     setDescription(title);
   };
@@ -199,6 +182,7 @@ const AutoTransactionModal = ({
         type: transactionType,
         isRecurring,
         recurringId: recurringId || undefined,
+        category: transactionCategory,
       };
 
       if (type === "create") {
@@ -213,6 +197,7 @@ const AutoTransactionModal = ({
           type: transactionType,
           description: normalizedDescription,
           recurringId,
+          category: transactionCategory,
         });
       }
 
@@ -220,6 +205,7 @@ const AutoTransactionModal = ({
       resetForm();
       onSuccess?.();
       refetch();
+      refetchTypes();
       saveTitleToMemory(normalizedDescription || "");
     } catch (error) {
       console.error("Erro ao processar transação:", error);
@@ -282,29 +268,52 @@ const AutoTransactionModal = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="type">Tipo *</Label>
-            <Select
-              value={transactionType}
-              onValueChange={(value: TransactionType) =>
-                setTransactionType(value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={TransactionTypeEnum.INCOME}>
-                  Receita
-                </SelectItem>
-                <SelectItem value={TransactionTypeEnum.EXPENSE}>
-                  Despesa
-                </SelectItem>
-                <SelectItem value={TransactionTypeEnum.TRANSFER}>
-                  Transferência
-                </SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="flex justify-between w-full">
+            <div className="space-y-2">
+              <Label htmlFor="type">Tipo *</Label>
+              <Select
+                value={transactionType}
+                onValueChange={(value: TransactionType) =>
+                  setTransactionType(value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={TransactionTypeEnum.INCOME}>
+                    Receita
+                  </SelectItem>
+                  <SelectItem value={TransactionTypeEnum.EXPENSE}>
+                    Despesa
+                  </SelectItem>
+                  <SelectItem value={TransactionTypeEnum.TRANSFER}>
+                    Transferência
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria *</Label>
+              <Select
+                value={transactionCategory}
+                onValueChange={(value: CategoryEnum) =>
+                  setTransactionCategory(value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a categoria" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATEGORY_TRANSLATIONS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-4">

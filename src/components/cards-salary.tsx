@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Frequency } from "@prisma/client";
 import { CalendarDays, DollarSign, Repeat, TrendingUp } from "lucide-react";
 import { formatCurrency } from "../lib/formatS";
 import { getFrequencyLabel } from "../utils/infor-cards";
+import ProgressSpending from "./ProgressSpending";
 
 type SalaryData = {
   userId: string;
@@ -22,12 +22,14 @@ interface SalaryCardProps {
   salary: SalaryData;
   progressValue?: number;
   isOverLimit?: boolean;
+  userId: string;
 }
 
 export function SalaryCard({
   salary,
   progressValue,
   isOverLimit,
+  userId,
 }: SalaryCardProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR", {
@@ -80,25 +82,10 @@ export function SalaryCard({
 
         {/* Progress Section */}
         <div className="mb-6 space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-zinc-900 dark:text-white">
-              Progresso de Gastos
-            </h4>
-            <p
-              className={`text-sm font-semibold ${
-                isOverLimit
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-green-600 dark:text-green-400"
-              }`}
-            >
-              {progressValue?.toFixed(2)}%
-            </p>
-          </div>
-          <Progress
-            value={progressValue}
-            className={`h-3 ${
-              isOverLimit ? "bg-red-100 dark:bg-red-900/20" : ""
-            }`}
+          <ProgressSpending
+            key={salary.id}
+            userId={userId}
+            maxValue={salary.amount}
           />
         </div>
 

@@ -1,5 +1,5 @@
 import { db } from "@/lib/prisma";
-import { TransactionType } from "@prisma/client";
+import { CategoryEnum, TransactionType } from "@prisma/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -50,6 +50,41 @@ export const transactionRouter = router({
         });
       }
     }),
+  getTransactionsType: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      try {
+        if (!input.userId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Necessario User_id para buscar Transações!",
+          });
+        }
+
+        const transactions = await db.transaction.findMany({
+          where: {
+            userId: input.userId,
+            type: {
+              in: ["EXPENSE", "TRANSFER"],
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
+
+        return transactions;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Erro ao buscar as transações" + error,
+        });
+      }
+    }),
   createrTransactions: publicProcedure
     .input(
       z.object({
@@ -60,6 +95,7 @@ export const transactionRouter = router({
         type: z.nativeEnum(TransactionType),
         isRecurring: z.boolean(),
         recurringId: z.string().optional(),
+        category: z.nativeEnum(CategoryEnum).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -72,6 +108,7 @@ export const transactionRouter = router({
           type,
           description,
           recurringId,
+          category,
         } = input;
 
         if (!userId || !amount || !date) {
@@ -90,6 +127,7 @@ export const transactionRouter = router({
             isRecurring,
             description,
             recurringId,
+            category,
           },
         });
 
@@ -115,6 +153,7 @@ export const transactionRouter = router({
         type: z.nativeEnum(TransactionType),
         isRecurring: z.boolean(),
         recurringId: z.string().optional(),
+        category: z.nativeEnum(CategoryEnum).optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -128,6 +167,7 @@ export const transactionRouter = router({
           type,
           description,
           recurringId,
+          category,
         } = input;
 
         if (!userId || !amount || !date || !id) {
@@ -149,6 +189,7 @@ export const transactionRouter = router({
             isRecurring,
             description,
             recurringId,
+            category,
           },
         });
 

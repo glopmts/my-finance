@@ -11,7 +11,7 @@ type PropsAlert = {
 
 const ErrorMessage = ({ title, message, className }: PropsAlert) => {
   return (
-    <div className={`w-full max-w-7xl mx-auto h-screen ${className}`}>
+    <div className={`w-full max-w-7xl mx-auto h-auto ${className}`}>
       <Alert variant="destructive">
         <AlertCircleIcon size={2} />
         <AlertTitle>{title || "Error"}</AlertTitle>
