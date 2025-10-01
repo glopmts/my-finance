@@ -16,6 +16,7 @@ type DataProps = {
   transaction?: TransactionProps;
   userId: string | null;
   refetch: () => void;
+  refetchTypes: () => void;
   handleDelete?: (id: string) => void;
   handleFixed?: (id: string) => void;
   handleEdite: (transaction: TransactionProps) => void;
@@ -29,6 +30,7 @@ const CardTransaction = ({
   isSelected = false,
   onSelect,
   refetch,
+  refetchTypes,
   handleDelete,
   handleEdite,
 }: DataProps) => {
@@ -46,6 +48,7 @@ const CardTransaction = ({
               refetch={refetch}
               type="create"
               userId={userId}
+              refetchTypes={refetchTypes}
             />
           )}
         </div>

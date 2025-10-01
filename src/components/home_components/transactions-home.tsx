@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { TransactionProps } from "../../types/interfaces";
-import ErrorMessage from "../ErrorMessage";
+import ErrorMessage from "../infor/ErrorMessage";
 
 import { Loader2 } from "lucide-react";
 import HtmlTransaction from "../transaction-compoents/html-transaction";

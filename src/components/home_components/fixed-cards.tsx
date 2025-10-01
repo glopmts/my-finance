@@ -1,12 +1,12 @@
 "use client";
 
+import { formatCurrency } from "@/lib/formatS";
+import { trpc } from "@/server/trpc/client";
+import { getFrequencyLabel } from "@/utils/infor-cards";
 import { DollarSign, Pin, Repeat, TrendingUp } from "lucide-react";
-import { formatCurrency } from "../../lib/formatS";
-import { trpc } from "../../server/trpc/client";
-import { getFrequencyLabel } from "../../utils/infor-cards";
-import { DataAlert } from "../DateAlert";
-import ErrorMessage from "../ErrorMessage";
-import LoaderTypes from "../LoaderTypes";
+import { DataAlert } from "../infor/DateAlert";
+import ErrorMessage from "../infor/ErrorMessage";
+import LoaderTypes from "../infor/LoaderTypes";
 import MenuDropdwonCard from "../MenuDropdwonCards";
 import { Badge } from "../ui/badge";
 import { Card } from "../ui/card";

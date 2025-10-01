@@ -150,7 +150,7 @@ export default function UploadFile({
               </div>
 
               {/* Info Box */}
-              <div className="bg-slate-50 dark:bg-zinc-800 rounded-lg p-4 border border-zinc-200 dark:border-zinc-600">
+              <div className="bg-slate-50 dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-600">
                 <div className="flex items-start space-x-3">
                   <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                   <div>

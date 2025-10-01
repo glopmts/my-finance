@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import LoaderTypes from "./LoaderTypes";
+import LoaderTypes from "./infor/LoaderTypes";
 import { Button } from "./ui/button";
 
 export function SendReportButton() {

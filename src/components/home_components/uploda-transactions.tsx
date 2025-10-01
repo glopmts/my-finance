@@ -28,7 +28,7 @@ export const UploadPage: React.FC = () => {
   };
 
   return (
-    <div className="w-auto h-full">
+    <div className="w-auto h-auto">
       <div className="w-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold  mb-2">

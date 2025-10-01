@@ -36,7 +36,7 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full h-auto dark:bg-zinc-900/20 sticky">
+    <header className="w-full h-auto dark:bg-zinc-950 bg-white z-20 sticky top-0">
       <nav className="p-3 w-full h-full max-w-7xl mx-auto">
         <div className="flex justify-between items-center w-full">
           <Link href="/" passHref>

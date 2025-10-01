@@ -106,7 +106,7 @@ const HtmlTransaction: FC<TransactionHtml> = ({
 
   return (
     <div className="">
-      <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm sticky top-0 z-10">
+      <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-0">
           <div className="py-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -201,8 +201,8 @@ const HtmlTransaction: FC<TransactionHtml> = ({
       </div>
 
       <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-0 py-8">
-        <div className="mb-8 flex flex-col md:flex-row gap-3 justify-between w-full">
-          <div className="flex-1 md:mr-3">
+        <div className="mb-8 flex flex-col md:flex-row gap-3 justify-between w-full h-full">
+          <div className="flex-1 md:mr-3 h-auto">
             {mockSalaryData?.map((item) => (
               <ProgressSpending
                 key={item.id}
@@ -211,7 +211,9 @@ const HtmlTransaction: FC<TransactionHtml> = ({
               />
             ))}
           </div>
-          <UploadPage />
+          <div className="">
+            <UploadPage />
+          </div>
         </div>
 
         <div className="pb-6">
@@ -261,6 +263,7 @@ const HtmlTransaction: FC<TransactionHtml> = ({
                   transaction={transaction}
                   refetch={refetch}
                   userId={userId}
+                  refetchTypes={refetchTypes}
                   handleDelete={handleDelete}
                   handleEdite={handleEdit}
                   isSelected={selectedTransactions.includes(transaction.id)}

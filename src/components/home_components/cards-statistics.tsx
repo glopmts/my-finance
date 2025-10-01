@@ -7,9 +7,9 @@ import { Loader } from "lucide-react";
 import { useState } from "react";
 import { SalaryCard } from "../cards-salary";
 import CardTransaction from "../cards-transaction";
-import { DataAlert } from "../DateAlert";
-import ErrorMessage from "../ErrorMessage";
-import LoaderTypes from "../LoaderTypes";
+import { DataAlert } from "../infor/DateAlert";
+import ErrorMessage from "../infor/ErrorMessage";
+import LoaderTypes from "../infor/LoaderTypes";
 import AutoSalaryModal from "../modals/auto-salary-modal";
 import AutoTransactionModal from "../modals/auto-transaction-modal";
 
@@ -32,9 +32,14 @@ const CardsStatistics = ({ userId }: PropsUser) => {
     isLoading: loader,
     error: errorTransaction,
     refetch: refetchTransaction,
-  } = trpc.transaction.getTransactionsType.useQuery({
+  } = trpc.transaction.getTransactions.useQuery({
     userId,
   });
+
+  const { refetch: refetchTypes } =
+    trpc.transaction.getTransactionsType.useQuery({
+      userId,
+    });
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] =
@@ -174,6 +179,7 @@ const CardsStatistics = ({ userId }: PropsUser) => {
                   refetch={refetchTransaction}
                   userId={userId}
                   handleEdite={handleEdit}
+                  refetchTypes={refetchTypes}
                 />
               )}
             </div>
@@ -201,6 +207,7 @@ const CardsStatistics = ({ userId }: PropsUser) => {
           refetch={refetch}
           type="update"
           userId={userId}
+          refetchTypes={refetchTypes}
           isOpen={isEditModalOpen}
           onOpenChange={setIsEditModalOpen}
           transactionData={transactionToEdit!}
