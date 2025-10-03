@@ -1,6 +1,7 @@
 import { initTRPC } from "@trpc/server";
 import { authRouter } from "../routers/auth";
 import { fixedRouter } from "./fixed";
+import { monthlyBalanceRouter } from "./monthlyBalance";
 import { salaryRouter } from "./salary";
 import { transactionRouter } from "./transaction";
 
@@ -11,6 +12,7 @@ export const appRouter = t.router({
   salary: salaryRouter,
   transaction: transactionRouter,
   fixed: fixedRouter,
+  monthlyBalance: monthlyBalanceRouter,
 });
 
 export type AppRouter = typeof appRouter;

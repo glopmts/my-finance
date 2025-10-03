@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Frequency } from "@prisma/client";
 import { CalendarDays, DollarSign, Repeat, TrendingUp } from "lucide-react";
 import { formatCurrency } from "../lib/formatS";
+import { formatDate } from "../utils/formatDate";
 import { getFrequencyLabel } from "../utils/infor-cards";
 import ProgressSpending from "./ProgressSpending";
 
@@ -31,14 +32,6 @@ export function SalaryCard({
   isOverLimit,
   userId,
 }: SalaryCardProps) {
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
   return (
     <Card className="group relative overflow-hidden border-0 bg-white dark:bg-black shadow-sm ring-1 ring-zinc-100 dark:ring-zinc-900 transition-all duration-200 hover:shadow-md hover:ring-zinc-200 dark:hover:ring-zinc-800">
       <div className="p-6">

@@ -1,6 +1,6 @@
 "use client";
 
-import UploadFile from "@/components/uploda-file-transactions";
+import UploadFile from "@/components/modals/uploda-file-transactions";
 import { trpc } from "@/server/trpc/client";
 import { UploadResponse } from "@/types/interfaces";
 import React, { useState } from "react";

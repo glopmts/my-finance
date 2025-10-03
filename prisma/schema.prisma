@@ -24,6 +24,9 @@ model User {
   budgets        Budget[]
   Fixed          Fixed[]
   FinancialGoals FinancialGoals[]
+  MonthlyBalance MonthlyBalance[]
+  CacreditCard   CreditCard[]
+  BankAccount    BankAccount[]
 }
 
 enum AccountType {
@@ -36,18 +39,20 @@ enum AccountType {
 }
 
 model Transaction {
-  id          String              @id @default(cuid())
-  amount      Float
-  date        DateTime            @default(now())
-  description String?
-  type        TransactionType     @default(INCOME)
-  typeFile    TransactionTypeFile @default(NULL)
-  isRecurring Boolean             @default(false)
-  isProcessed Boolean             @default(false)
+  id            String              @id @default(cuid())
+  amount        Float
+  date          DateTime            @default(now())
+  description   String?
+  type          TransactionType     @default(INCOME)
+  typeFile      TransactionTypeFile @default(NULL)
+  paymentSource PaymentSource       @default(SALARY)
+
+  isRecurring Boolean      @default(false)
+  isProcessed Boolean      @default(false)
   recurringId String?
-  category    CategoryEnum        @default(EDUCATION)
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  category    CategoryEnum @default(EDUCATION)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   fixedId       String?
   fixed         Fixed?  @relation(name: "GeneratedTransactions", fields: [fixedId], references: [id])
@@ -57,9 +62,33 @@ model Transaction {
   user             User            @relation(fields: [userId], references: [id])
   FinancialGoals   FinancialGoals? @relation(fields: [financialGoalsId], references: [id])
   financialGoalsId String?
+  creditCardId     String?
+  creditCard       CreditCard?     @relation(fields: [creditCardId], references: [id])
+  BankAccount      BankAccount?    @relation(fields: [bankAccountId], references: [id])
+  bankAccountId    String?
 
   @@index([userId])
   @@index([date])
+}
+
+model BankAccount {
+  id            String      @id @default(cuid())
+  name          String
+  bankName      String
+  accountNumber String?
+  balance       Float       @default(0)
+  accountType   AccountType @default(CHECKING)
+  isActive      Boolean     @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId         String
+  user           User             @relation(fields: [userId], references: [id])
+  transactions   Transaction[]
+  FinancialGoals FinancialGoals[]
+
+  @@map("bank_accounts")
 }
 
 model Fixed {
@@ -102,12 +131,15 @@ model FinancialGoals {
 
   transactions Transaction[]
 
-  salaryId String?
-  salary   Salary? @relation(fields: [salaryId], references: [id])
+  salaryId      String?
+  salary        Salary?      @relation(fields: [salaryId], references: [id])
+  bankAccountId String?
+  bankAccount   BankAccount? @relation(fields: [bankAccountId], references: [id])
 
   @@unique([userId, month, year, type])
   @@index([userId])
   @@index([month, year])
+  @@index([bankAccountId])
 }
 
 enum GoalType {
@@ -147,6 +179,45 @@ model Budget {
   @@index([userId])
 }
 
+model MonthlyBalance {
+  id            String   @id @default(cuid())
+  month         Int
+  year          Int
+  balance       Float    @default(0)
+  totalIncome   Float    @default(0)
+  totalExpenses Float    @default(0)
+  isClosed      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@index([month, year])
+}
+
+model CreditCard {
+  id             String  @id @default(cuid())
+  name           String // Ex: "Nubank", "Itaú"
+  lastDigits     String
+  creditLimit    Float
+  availableLimit Float
+  closingDay     Int
+  dueDay         Int
+  isActive       Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@map("credit_cards")
+}
+
 enum TransactionType {
   INCOME
   EXPENSE
@@ -178,4 +249,13 @@ enum CategoryEnum {
   INVESTMENTS
   SHOPPING
   OTHER
+}
+
+enum PaymentSource {
+  SALARY // Salário/conta corrente
+  CREDIT_CARD
+  CASH
+  PIX
+  DEBIT_CARD
+  INVESTMENT
 }

@@ -147,7 +147,7 @@ const CardsStatistics = ({ userId }: PropsUser) => {
         </div>
       </div>
 
-      <div className="p-2">
+      <div className="mt-2">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Salary Cards Section */}
           <div className="lg:col-span-2 space-y-4">

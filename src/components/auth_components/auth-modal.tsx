@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useLogin } from "@/hook/use-login";
-import { useRegister } from "@/hook/use-register";
+import { useLogin } from "@/hooks/use-login";
+import { useRegister } from "@/hooks/use-register";
 import {
   AlertCircle,
   ArrowLeft,

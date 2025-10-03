@@ -1,5 +1,6 @@
 "use client";
 
+import { MonthlyBalanceCard } from "../components/cards/MonthlyBalanceCard";
 import Header from "../components/Header";
 import CardsStatistics from "../components/home_components/cards-statistics";
 import FixedHome from "../components/home_components/fixed-cards";
@@ -35,6 +36,9 @@ export default function Home() {
         </div>
         <div className="w-full">
           <SendReportButton />
+        </div>
+        <div className="w-full mt-6">
+          <MonthlyBalanceCard userId={userId} />
         </div>
         <div className="w-full">
           <FixedHome userId={userId} />

@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/formatS";
 import { trpc } from "@/server/trpc/client";
 import { getFrequencyLabel } from "@/utils/infor-cards";
 import { DollarSign, Pin, Repeat, TrendingUp } from "lucide-react";
+import { formatDate } from "../../utils/formatDate";
 import { DataAlert } from "../infor/DateAlert";
 import ErrorMessage from "../infor/ErrorMessage";
 import LoaderTypes from "../infor/LoaderTypes";
@@ -136,6 +137,11 @@ const FixedHome = ({ userId }: Props) => {
                 <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
                   <TrendingUp className="h-3 w-3" />
                   <span>Valor base comprar ou transferência</span>
+                </div>
+                <div className="mt-2">
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Criado hein: <strong>{formatDate(c.createdAt)}</strong>
+                  </span>
                 </div>
               </div>
             </div>

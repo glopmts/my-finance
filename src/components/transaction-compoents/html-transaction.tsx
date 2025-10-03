@@ -15,7 +15,6 @@ import { $Enums } from "@prisma/client";
 import { format, subMonths } from "date-fns";
 import { TransactionProps } from "../../types/interfaces";
 import CardTransaction from "../cards-transaction";
-import { UploadPage } from "../home_components/uploda-transactions";
 import AutoTransactionModal from "../modals/auto-transaction-modal";
 import ProgressSpending from "../ProgressSpending";
 import { Button } from "../ui/button";
@@ -202,7 +201,7 @@ const HtmlTransaction: FC<TransactionHtml> = ({
 
       <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-0 py-8">
         <div className="mb-8 flex flex-col md:flex-row gap-3 justify-between w-full h-full">
-          <div className="flex-1 md:mr-3 h-auto">
+          <div className="md:max-w-lg w-full md:mr-3 h-auto">
             {mockSalaryData?.map((item) => (
               <ProgressSpending
                 key={item.id}
@@ -211,9 +210,7 @@ const HtmlTransaction: FC<TransactionHtml> = ({
               />
             ))}
           </div>
-          <div className="">
-            <UploadPage />
-          </div>
+          <div className="">{/* <UploadPage /> */}</div>
         </div>
 
         <div className="pb-6">

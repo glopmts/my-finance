@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { URL_API } from "../utils/api-url";
+import { URL_API } from "../../utils/api-url";
 
 import {
   Dialog,
