@@ -1,4 +1,13 @@
-import { CategoryEnum, TransactionType } from "@prisma/client";
+import { CategoryEnum, PaymentSource, TransactionType } from "@prisma/client";
+
+export const PAYMENTSOURCE_TRANSLATIONS = {
+  PIX: "Pix",
+  DEBIT_CARD: "Debito Cartão",
+  INVESTMENT: "Investimentos",
+  SALARY: "Salario",
+  CREDIT_CARD: "Cartão credito",
+  CASH: "Dinheiro",
+} as const;
 
 export const CATEGORY_TRANSLATIONS = {
   TRANSPORTATION: "Transporte",
@@ -25,6 +34,7 @@ export type TransactionData = {
   createdAt?: string;
   updatedAt?: string;
   category: CategoryEnum;
+  paymentSource: PaymentSource;
   financialGoalsId?: string | null;
 };
 

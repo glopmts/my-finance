@@ -1,7 +1,8 @@
 import { db } from "@/lib/prisma";
-import { CategoryEnum, TransactionType } from "@prisma/client";
+import { CategoryEnum, PaymentSource, TransactionType } from "@prisma/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { createTransactionSchema } from "../../../lib/schema/transactions-schema";
 
 const t = initTRPC.create();
 
@@ -85,20 +86,9 @@ export const transactionRouter = router({
         });
       }
     }),
-  createrTransactions: publicProcedure
-    .input(
-      z.object({
-        userId: z.string(),
-        amount: z.number(),
-        date: z.union([z.date(), z.string().datetime()]),
-        description: z.string().optional(),
-        type: z.nativeEnum(TransactionType),
-        isRecurring: z.boolean(),
-        recurringId: z.string().optional(),
-        category: z.nativeEnum(CategoryEnum).optional(),
-      })
-    )
-    .mutation(async ({ input }) => {
+  createTransaction: publicProcedure
+    .input(createTransactionSchema)
+    .mutation(async ({ ctx, input }) => {
       try {
         const {
           userId,
@@ -109,36 +99,92 @@ export const transactionRouter = router({
           description,
           recurringId,
           category,
+          paymentSource,
         } = input;
 
         if (!userId || !amount || !date) {
           throw new TRPCError({
             code: "NOT_FOUND",
-            message: "Necessario Todos os campos Para criar transações!",
+            message: "Necessário todos os campos para criar transações!",
           });
         }
 
-        const transactions = await db.transaction.create({
+        const creditUser = await db.creditCard.findMany({
+          where: {
+            userId,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        });
+
+        const creditCardId = creditUser[0].id;
+
+        if (
+          paymentSource === PaymentSource.CREDIT_CARD &&
+          PaymentSource.DEBIT_CARD &&
+          creditCardId
+        ) {
+          const creditCard = await db.creditCard.findFirst({
+            where: {
+              id: creditCardId,
+              userId: userId,
+              isActive: true,
+            },
+          });
+
+          if (!creditCard) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Cartão de crédito não encontrado ou inativo!",
+            });
+          }
+
+          if (creditCard.availableLimit < amount) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `Limite insuficiente! Disponível: ${creditCard.availableLimit}, Necessário: ${amount}`,
+            });
+          }
+
+          await db.creditCard.update({
+            where: { id: creditCardId },
+            data: {
+              availableLimit: {
+                decrement: amount,
+              },
+            },
+          });
+        }
+
+        const transaction = await db.transaction.create({
           data: {
             userId,
             amount,
             type,
-            date,
+            date: new Date(date),
             isRecurring,
             description,
             recurringId,
             category,
+            paymentSource,
+            creditCardId:
+              paymentSource === PaymentSource.CREDIT_CARD ? creditCardId : null,
           },
         });
 
         return {
           status: 201,
-          transactions,
+          message: "Transação criada com sucesso!",
+          transaction,
         };
       } catch (error) {
+        if (error instanceof TRPCError) throw error;
+
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Erro ao criar as transações" + error,
+          message: "Erro ao criar a transação: " + error,
         });
       }
     }),
@@ -154,6 +200,9 @@ export const transactionRouter = router({
         isRecurring: z.boolean(),
         recurringId: z.string().optional(),
         category: z.nativeEnum(CategoryEnum).optional(),
+        paymentSource: z
+          .nativeEnum(PaymentSource)
+          .default(PaymentSource.CREDIT_CARD),
       })
     )
     .mutation(async ({ input }) => {
@@ -168,6 +217,7 @@ export const transactionRouter = router({
           description,
           recurringId,
           category,
+          paymentSource,
         } = input;
 
         if (!userId || !amount || !date || !id) {
@@ -190,6 +240,7 @@ export const transactionRouter = router({
             description,
             recurringId,
             category,
+            paymentSource,
           },
         });
 
@@ -242,7 +293,7 @@ export const transactionRouter = router({
           });
         }
 
-        await db.fixed.delete({
+        await db.fixed.deleteMany({
           where: {
             originId: transactionId,
           },

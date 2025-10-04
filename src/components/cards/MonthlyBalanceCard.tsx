@@ -3,6 +3,7 @@
 import { useMonthlyBalance } from "@/hooks/useMonthlyBalance";
 import { DataAlert } from "../infor/DateAlert";
 import { Button } from "../ui/button";
+import { Card } from "../ui/card";
 
 interface MonthlyBalanceCardProps {
   userId: string;
@@ -19,7 +20,7 @@ export function MonthlyBalanceCard({ userId }: MonthlyBalanceCardProps) {
   const isPositive = currentBalance.balance >= 0;
 
   return (
-    <div className="group relative overflow-hidden border bg-white dark:bg-zinc-900/20 shadow-sm ring-1 ring-zinc-100 dark:ring-zinc-900 transition-all duration-200 hover:shadow-md hover:ring-zinc-200 dark:hover:ring-zinc-800 p-3 rounded-md">
+    <Card className="group relative overflow-hidden border from-zinc-50/20 bg-gradient-to-br shadow-sm ring-1 ring-zinc-100 dark:ring-zinc-900 transition-all duration-200 hover:shadow-md hover:ring-zinc-200 dark:hover:ring-zinc-800 dark:from-zinc-800/60 p-3">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">
           Saldo de {currentBalance.month}/{currentBalance.year}
@@ -81,6 +82,6 @@ export function MonthlyBalanceCard({ userId }: MonthlyBalanceCardProps) {
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

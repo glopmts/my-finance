@@ -21,6 +21,13 @@ import { ModeToggle } from "./ModeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
+
 const Header = () => {
   const { data: userData, refetch } = trpc.auth.me.useQuery();
   const [isClient, setIsClient] = useState(false);
@@ -43,7 +50,7 @@ const Header = () => {
     <header className="w-full h-auto dark:bg-zinc-950 bg-white z-20 sticky top-0">
       <nav className="p-3 w-full h-full max-w-7xl mx-auto">
         <div className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <Link href="/" passHref>
               <div className="flex gap-2.5 cursor-pointer">
                 <div className="relative w-12 h-12">
@@ -65,18 +72,21 @@ const Header = () => {
               </div>
             </Link>
             <div className="flex items-center gap-2.5">
-              {linksNavegation.map((lk) => (
-                <Button
-                  key={lk.href}
-                  variant={pathame === lk.href ? "default" : "ghost"}
-                  asChild
-                >
-                  <Link href={lk.href} className="flex items-center gap-1.5">
-                    <lk.icon size={20} />
-                    <span>{lk.label}</span>
-                  </Link>
-                </Button>
-              ))}
+              <NavigationMenu className="h-full *:h-full max-md:hidden">
+                <NavigationMenuList className="h-full gap-2">
+                  {linksNavegation.map((link, index) => (
+                    <NavigationMenuItem key={index} className="h-full">
+                      <NavigationMenuLink
+                        active={pathame === link.href}
+                        href={link.href}
+                        className="text-muted-foreground hover:text-primary border-b-primary hover:border-b-primary data-[active]:border-b-primary h-full justify-center rounded-none border-y-2 border-transparent py-1.5 font-medium hover:bg-transparent data-[active]:bg-transparent!"
+                      >
+                        {link.label}
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  ))}
+                </NavigationMenuList>
+              </NavigationMenu>
             </div>
           </div>
 

@@ -91,7 +91,7 @@ const FixedHome = ({ userId }: Props) => {
         {fixeds.map((c) => (
           <Card
             key={c.id}
-            className="group relative overflow-hidden border-0 bg-white dark:bg-black shadow-sm ring-1 ring-zinc-100 dark:ring-zinc-900 transition-all duration-200 hover:shadow-md hover:ring-zinc-200 dark:hover:ring-zinc-800"
+            className="group relative overflow-hidden border from-zinc-50/20 bg-gradient-to-br shadow-sm ring-1 ring-zinc-100 dark:ring-zinc-900 transition-all duration-200 hover:shadow-md hover:ring-zinc-200 dark:hover:ring-zinc-800 dark:from-zinc-800/60"
           >
             <div className="p-6">
               <div className="flex items-start justify-between relative">

@@ -1,12 +1,12 @@
 "use client";
 
 import { MonthlyBalanceCard } from "../components/cards/MonthlyBalanceCard";
+import CategoryTransactions from "../components/categorys-transactions";
 import Header from "../components/Header";
-import CardsStatistics from "../components/home_components/cards-statistics";
 import FixedHome from "../components/home_components/fixed-cards";
+import InforBankUser from "../components/home_components/infor-bank-user";
 import TransactionsHome from "../components/home_components/transactions-home";
 import UnauthenticatedHome from "../components/home_components/UnauthenticatedHome";
-import { SendReportButton } from "../components/SendReportButton";
 import { trpc } from "../server/trpc/client";
 
 export default function Home() {
@@ -32,16 +32,22 @@ export default function Home() {
       <Header />
       <div className="mx-auto max-w-7xl p-2 mt-4 w-full">
         <div className="w-full">
-          <CardsStatistics userId={userId} />
+          <InforBankUser />
         </div>
         <div className="w-full">
-          <SendReportButton />
+          {/* <CardsStatistics userId={userId} /> */}
         </div>
+        {/* <div className="w-full">
+          <SendReportButton />
+        </div> */}
         <div className="w-full mt-6">
           <MonthlyBalanceCard userId={userId} />
         </div>
         <div className="w-full">
           <FixedHome userId={userId} />
+        </div>
+        <div className="w-full mt-8">
+          <CategoryTransactions userId={userId} />
         </div>
         <div className="w-full">
           <TransactionsHome userId={userId} />

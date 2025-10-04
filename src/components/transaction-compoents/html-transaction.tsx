@@ -15,6 +15,7 @@ import { $Enums } from "@prisma/client";
 import { format, subMonths } from "date-fns";
 import { TransactionProps } from "../../types/interfaces";
 import CardTransaction from "../cards-transaction";
+import CreditCardPage from "../home_components/credit-cart";
 import AutoTransactionModal from "../modals/auto-transaction-modal";
 import ProgressSpending from "../ProgressSpending";
 import { Button } from "../ui/button";
@@ -210,7 +211,9 @@ const HtmlTransaction: FC<TransactionHtml> = ({
               />
             ))}
           </div>
-          <div className="">{/* <UploadPage /> */}</div>
+          <div className="mt-0 w-full">
+            <CreditCardPage />
+          </div>
         </div>
 
         <div className="pb-6">

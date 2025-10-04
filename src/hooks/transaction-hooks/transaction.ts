@@ -9,8 +9,8 @@ import {
 } from "date-fns";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "../server/trpc/client";
-import { TransactionProps } from "../types/interfaces";
+import { trpc } from "../../server/trpc/client";
+import { TransactionProps } from "../../types/interfaces";
 
 export function useTransactionHook(userId: string) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());

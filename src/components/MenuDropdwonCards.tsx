@@ -51,24 +51,15 @@ export default function MenuDropdwonCard({
             {isFixed ? "Fixado" : "Fixa"}
           </DropdownMenuItem>
         )}
-        {handleDelete &&
-          (fixedId ? (
-            <DropdownMenuItem
-              onClick={() => handleDelete(fixedId || "")}
-              className="text-red-600 dark:text-red-400"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Excluir Fixado
-            </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem
-              onClick={() => handleDelete(transaction!.id)}
-              className="text-red-600 dark:text-red-400"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Excluir
-            </DropdownMenuItem>
-          ))}
+        {handleDelete && transaction?.id && (
+          <DropdownMenuItem
+            onClick={() => handleDelete(transaction?.id || "")}
+            className="text-red-600 dark:text-red-400"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Excluir
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

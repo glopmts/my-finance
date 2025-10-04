@@ -68,6 +68,14 @@ const CardsStatistics = ({ userId }: PropsUser) => {
     });
   };
 
+  if (isLoading || loader) {
+    return (
+      <div className="w-full h-46 mt-8">
+        <LoaderTypes types="spine" count={2} />
+      </div>
+    );
+  }
+
   if (error) {
     return <ErrorMessage message={error.message} />;
   }
@@ -78,14 +86,6 @@ const CardsStatistics = ({ userId }: PropsUser) => {
         message={errorTransaction.message}
         title="Error transactions"
       />
-    );
-  }
-
-  if (isLoading || loader) {
-    return (
-      <div className="w-full h-46 mt-8">
-        <LoaderTypes types="spine" count={2} />
-      </div>
     );
   }
 
