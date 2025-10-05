@@ -1,12 +1,11 @@
 "use client";
 
 import { Filter, TrendingDown, TrendingUp, Wallet, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { trpc } from "../../server/trpc/client";
-import type { TransactionProps } from "../../types/interfaces";
+import { InforBankUserHook } from "../../hooks/bank-account";
 import { SalaryCard } from "../cards-salary";
 import { DataAlert } from "../infor/DateAlert";
 import LoaderTypes from "../infor/LoaderTypes";
+import AutoBankAccountModal from "../modals/auto-bankAccount-modal";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -17,160 +16,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-type PropsInfor = {
-  typeInfor?: "next" | "default";
-  autoPlayInterval?: number;
-};
 
-const InforBankUser = ({
-  typeInfor = "default",
-  autoPlayInterval = 5000,
-}: PropsInfor) => {
-  const { data: userData, isLoading: loaderUser } = trpc.auth.me.useQuery();
-
+const InforBankUser = () => {
   const {
-    data: bankAccount,
+    totalBalance,
+    loaderUser,
     isLoading,
-    refetch,
-  } = trpc.bankAccount.getBankAcconut.useQuery({
-    userId: userData?.id as string,
-  });
-
-  const {
-    data: mockTransaction,
-    isLoading: loader,
-    error: errorTransaction,
-    refetch: refetchTransaction,
-  } = trpc.transaction.getTransactions.useQuery({
-    userId: userData?.id as string,
-  });
-
-  const {
-    data: mockSalaryData,
-    isLoading: loaderSalary,
+    currentIndex,
+    loader,
+    typeInfor,
+    loaderSalary,
+    mockSalaryData,
+    errorTransaction,
     error,
-  } = trpc.salary.getSalary.useQuery({
-    userId: userData?.id as string,
-  });
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
-
-  const [selectedMonth, setSelectedMonth] = useState<string>("all");
-  const [selectedType, setSelectedType] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [showFilters, setShowFilters] = useState(false);
-
-  useEffect(() => {
-    if (!isAutoPlay || !mockSalaryData || mockSalaryData.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % mockSalaryData.length);
-    }, autoPlayInterval);
-
-    return () => clearInterval(interval);
-  }, [isAutoPlay, mockSalaryData, autoPlayInterval]);
-
-  const filteredTransactions = useMemo(() => {
-    if (!mockTransaction) return [];
-
-    return mockTransaction.filter((transaction) => {
-      const transactionDate = new Date(transaction.date);
-      const transactionMonth = `${transactionDate.getFullYear()}-${String(
-        transactionDate.getMonth() + 1
-      ).padStart(2, "0")}`;
-
-      const matchesMonth =
-        selectedMonth === "all" || transactionMonth === selectedMonth;
-      const matchesType =
-        selectedType === "all" || transaction.type === selectedType;
-      const matchesCategory =
-        selectedCategory === "all" || transaction.category === selectedCategory;
-
-      return matchesMonth && matchesType && matchesCategory;
-    });
-  }, [mockTransaction, selectedMonth, selectedType, selectedCategory]);
-
-  const availableMonths = useMemo(() => {
-    if (!mockTransaction) return [];
-
-    const months = new Set<string>();
-    mockTransaction.forEach((transaction) => {
-      const date = new Date(transaction.date);
-      const monthKey = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, "0")}`;
-      months.add(monthKey);
-    });
-
-    return Array.from(months).sort().reverse();
-  }, [mockTransaction]);
-
-  const availableCategories = useMemo(() => {
-    if (!mockTransaction) return [];
-
-    const categories = new Set<string>();
-    mockTransaction.forEach((transaction) => {
-      if (transaction.category) {
-        categories.add(transaction.category);
-      }
-    });
-
-    return Array.from(categories).sort();
-  }, [mockTransaction]);
-
-  const formatMonth = (monthKey: string) => {
-    const [year, month] = monthKey.split("-");
-    const date = new Date(Number.parseInt(year), Number.parseInt(month) - 1);
-    return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-  };
-
-  const clearFilters = () => {
-    setSelectedMonth("all");
-    setSelectedType("all");
-    setSelectedCategory("all");
-  };
-
-  const activeFiltersCount = [
+    showFilters,
+    filteredTransactions,
+    availableCategories,
+    activeFiltersCount,
+    formatMonth,
     selectedMonth,
+    setSelectedMonth,
+    availableMonths,
     selectedType,
+    setSelectedType,
     selectedCategory,
-  ].filter((f) => f !== "all").length;
-
-  const handlePrevious = () => {
-    setIsAutoPlay(false);
-    setCurrentIndex((prev) =>
-      prev === 0 ? (mockSalaryData?.length || 1) - 1 : prev - 1
-    );
-  };
-
-  const handleNext = () => {
-    setIsAutoPlay(false);
-    setCurrentIndex((prev) => (prev + 1) % (mockSalaryData?.length || 1));
-  };
-
+    setSelectedCategory,
+    bankAccount,
+    userData,
+    mockTransaction,
+    clearFilters,
+    calculateTotalExpenses,
+    refetch,
+    calculateTotalIncome,
+    setShowFilters,
+    refetchTransaction,
+  } = InforBankUserHook({
+    typeInfor: "default",
+  });
   if (isLoading || loader || loaderSalary || loaderUser) {
     return (
       <div className="w-full h-46 mt-8">
         <LoaderTypes types="spine" count={2} />
       </div>
     );
-  }
-
-  function calculateTotalExpenses(transactions: TransactionProps[]) {
-    if (!Array.isArray(transactions)) return 0;
-
-    return transactions
-      .filter((t) => t.type === "EXPENSE")
-      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
-  }
-
-  function calculateTotalIncome(transactions: TransactionProps[]) {
-    if (!Array.isArray(transactions)) return 0;
-
-    return transactions
-      .filter((t) => t.type === "INCOME")
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
   }
 
   if (!mockSalaryData || mockSalaryData.length === 0) {
@@ -181,15 +69,12 @@ const InforBankUser = ({
     return <DataAlert message="Nenhuma transferência encontrada!" />;
   }
 
-  const currentSalary = mockSalaryData[currentIndex];
-  const maxValue = currentSalary.amount;
+  const currentSalary = mockSalaryData && mockSalaryData[currentIndex];
+  const maxValue = currentSalary?.amount;
   const totalExpenses = calculateTotalExpenses(filteredTransactions);
   const totalIncome = calculateTotalIncome(filteredTransactions);
   const progressValue = Math.min((totalExpenses / maxValue) * 100, 100);
   const isOverLimit = totalExpenses > maxValue;
-
-  const totalBalance =
-    bankAccount?.reduce((sum, account) => sum + account.balance, 0) || 0;
 
   return (
     <div className="w-full h-full space-y-6">
@@ -387,6 +272,20 @@ const InforBankUser = ({
             {mockSalaryData.length > 1 &&
               `(${currentIndex + 1}/${mockSalaryData.length})`}
           </h2>
+          {bankAccount?.length && bankAccount?.length > 0 ? (
+            <AutoBankAccountModal
+              type="update"
+              userId={userData?.id as string}
+              refetch={refetch}
+              bankData={bankAccount[0]}
+            />
+          ) : (
+            <AutoBankAccountModal
+              type="create"
+              userId={userData?.id as string}
+              refetch={refetch}
+            />
+          )}
         </div>
 
         <div className="relative overflow-hidden">
@@ -407,52 +306,6 @@ const InforBankUser = ({
           </div>
         </div>
       </div>
-
-      {bankAccount && bankAccount.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Contas Bancárias</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {bankAccount.map((account) => (
-              <Card
-                key={account.id}
-                className="hover:shadow-lg transition-shadow"
-              >
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center justify-between">
-                    <span>{account.name}</span>
-                    {account.isActive && (
-                      <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 px-2 py-1 rounded-full">
-                        Ativa
-                      </span>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {account.bankName}
-                    </p>
-                    {account.accountNumber && (
-                      <p className="text-xs text-muted-foreground">
-                        Conta: {account.accountNumber}
-                      </p>
-                    )}
-                  </div>
-                  <div className="pt-2 border-t">
-                    <p className="text-xs text-muted-foreground">Saldo</p>
-                    <p className="text-2xl font-bold">
-                      R$ {account.balance.toFixed(2)}
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground capitalize">
-                    {account.accountType.toLowerCase().replace("_", " ")}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -48,7 +48,7 @@ export const bankAccountRouter = router({
         name: z.string(),
         balance: z.number().optional(),
         bankName: z.string(),
-        accountNumber: z.string(),
+        accountNumber: z.string().optional(),
         accountType: z.nativeEnum(AccountType).default(AccountType.OTHER),
         isActive: z.boolean().optional(),
       })
@@ -102,7 +102,7 @@ export const bankAccountRouter = router({
         name: z.string(),
         balance: z.number().optional(),
         bankName: z.string(),
-        accountNumber: z.string(),
+        accountNumber: z.string().optional(),
         accountType: z.nativeEnum(AccountType).default(AccountType.OTHER),
         isActive: z.boolean().optional(),
       })
