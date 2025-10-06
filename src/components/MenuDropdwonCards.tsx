@@ -17,6 +17,7 @@ interface MenuDropdownCardProps {
   handleDelete?: (id: string) => void;
   handleFixed?: (id: string) => void;
   isFixed?: boolean;
+  onMenuOpenChange?: (open: boolean) => void;
 }
 
 export default function MenuDropdwonCard({
@@ -26,9 +27,10 @@ export default function MenuDropdwonCard({
   handleEdite: handleEdit,
   handleDelete,
   handleFixed,
+  onMenuOpenChange,
 }: MenuDropdownCardProps) {
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={onMenuOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -54,6 +56,16 @@ export default function MenuDropdwonCard({
         {handleDelete && transaction?.id && (
           <DropdownMenuItem
             onClick={() => handleDelete(transaction?.id || "")}
+            className="text-red-600 dark:text-red-400"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Excluir
+          </DropdownMenuItem>
+        )}
+
+        {fixedId && handleDelete && (
+          <DropdownMenuItem
+            onClick={() => handleDelete(fixedId || "")}
             className="text-red-600 dark:text-red-400"
           >
             <Trash2 className="mr-2 h-4 w-4" />

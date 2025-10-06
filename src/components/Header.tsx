@@ -27,6 +27,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
+import MenuMobile from "./MenuMobile";
 
 const Header = () => {
   const { data: userData, refetch } = trpc.auth.me.useQuery();
@@ -40,10 +41,13 @@ const Header = () => {
   }, [refetch]);
 
   const handleSignOut = async () => {
-    await signOut();
-    setTimeout(() => {
-      window.location.reload();
-    }, 300);
+    const confirM = confirm("Desejar realmente deslogar?");
+    if (confirM) {
+      await signOut();
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    }
   };
 
   return (
@@ -97,9 +101,14 @@ const Header = () => {
                 <Loader size={26} className="animate-spin" />
               </div>
             ) : userData ? (
-              <div className="w-auto">
-                <MenuUser userData={userData} signOut={handleSignOut} />
-              </div>
+              <>
+                <div className="w-auto hidden md:block">
+                  <MenuUser userData={userData} signOut={handleSignOut} />
+                </div>
+                <div className="block md:hidden">
+                  <MenuMobile user={userData} signOut={signOut} />
+                </div>
+              </>
             ) : (
               <AuthModal />
             )}

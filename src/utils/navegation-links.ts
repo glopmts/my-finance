@@ -1,4 +1,4 @@
-import { DollarSign, Home, Upload } from "lucide-react";
+import { DollarSign, Home } from "lucide-react";
 
 export const linksNavegation = [
   {
@@ -11,9 +11,9 @@ export const linksNavegation = [
     href: "/transactions",
     icon: DollarSign,
   },
-  {
-    label: "Upload Extrato",
-    href: "/upload-extract",
-    icon: Upload,
-  },
+  // {
+  //   label: "Upload Extrato",
+  //   href: "/upload-extract",
+  //   icon: Upload,
+  // },
 ];

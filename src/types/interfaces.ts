@@ -21,6 +21,17 @@ export interface TransactionProps {
   paymentSource: $Enums.PaymentSource;
 }
 
+export interface UserProps {
+  id: string;
+  name: string | null;
+  image: string | null;
+  email: string;
+  clerkId: string | null;
+  emailVerified: string | null;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  lastLogin: string | null | Date;
+}
 export interface UploadResponse {
   message: string;
   transactions: Transaction[];

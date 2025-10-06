@@ -12,6 +12,21 @@ import { toast } from "sonner";
 import { trpc } from "../../server/trpc/client";
 import { TransactionProps } from "../../types/interfaces";
 
+type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER" | "ALL";
+
+type CategoryEnum =
+  | "TRANSPORTATION"
+  | "FOOD"
+  | "ACCOMMODATION"
+  | "ENTERTAINMENT"
+  | "HEALTHCARE"
+  | "EDUCATION"
+  | "UTILITIES"
+  | "INVESTMENTS"
+  | "SHOPPING"
+  | "OTHER"
+  | "ALL";
+
 export function useTransactionHook(userId: string) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [transactionsToShow, setTransactionsToShow] = useState<number>(12);
@@ -22,6 +37,8 @@ export function useTransactionHook(userId: string) {
     []
   );
   const [isSelecting10, setIsSelecting10] = useState(false);
+  const [selectType, setTypeSelect] = useState<TransactionType>("ALL");
+  const [selectCategory, setCategory] = useState<CategoryEnum>("ALL");
 
   const {
     data: allTransactions,
@@ -50,7 +67,9 @@ export function useTransactionHook(userId: string) {
 
   const deleteTransactionMutation =
     trpc.transaction.deleteTransaction.useMutation({
-      onSuccess: () => refetch(),
+      onSuccess: () => {
+        refetch();
+      },
       onError: (error) => console.error("Erro ao deletar transação:", error),
     });
 
@@ -63,7 +82,14 @@ export function useTransactionHook(userId: string) {
 
     return transactions.filter((transaction) => {
       const transactionDate = parseISO(transaction.date);
-      return isWithinInterval(transactionDate, { start, end });
+      const isInMonth = isWithinInterval(transactionDate, { start, end });
+
+      const typeMatch = selectType === "ALL" || transaction.type === selectType;
+
+      const categoryMatch =
+        selectCategory === "ALL" || transaction.category === selectCategory;
+
+      return isInMonth && typeMatch && categoryMatch;
     });
   };
 
@@ -203,5 +229,9 @@ export function useTransactionHook(userId: string) {
     transactionToEdit,
     filteredTransactions,
     paginatedTransactions,
+    selectType,
+    setTypeSelect,
+    selectCategory,
+    setCategory,
   };
 }

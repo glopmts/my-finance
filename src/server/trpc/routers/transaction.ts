@@ -112,6 +112,7 @@ export const transactionRouter = router({
         const creditUser = await db.creditCard.findMany({
           where: {
             userId,
+            isActive: true,
           },
           orderBy: {
             createdAt: "desc",
@@ -157,6 +158,30 @@ export const transactionRouter = router({
             },
           });
         }
+
+        const bank = await db.bankAccount.findMany({
+          where: {
+            userId,
+            isActive: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        });
+
+        const uniqbank = bank[0].id;
+
+        await db.bankAccount.update({
+          where: {
+            id: uniqbank,
+          },
+          data: {
+            balance: {
+              decrement: amount,
+            },
+          },
+        });
 
         const transaction = await db.transaction.create({
           data: {
@@ -226,6 +251,80 @@ export const transactionRouter = router({
             message: "Necessario Todos os campos Para atualizar transações!",
           });
         }
+
+        const creditUser = await db.creditCard.findMany({
+          where: {
+            userId,
+            isActive: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        });
+
+        const creditCardId = creditUser[0].id;
+
+        if (
+          paymentSource === PaymentSource.CREDIT_CARD &&
+          PaymentSource.DEBIT_CARD &&
+          creditCardId
+        ) {
+          const creditCard = await db.creditCard.findFirst({
+            where: {
+              id: creditCardId,
+              userId: userId,
+              isActive: true,
+            },
+          });
+
+          if (!creditCard) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Cartão de crédito não encontrado ou inativo!",
+            });
+          }
+
+          if (creditCard.availableLimit < amount) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `Limite insuficiente! Disponível: ${creditCard.availableLimit}, Necessário: ${amount}`,
+            });
+          }
+
+          await db.creditCard.update({
+            where: { id: creditCardId },
+            data: {
+              availableLimit: {
+                decrement: amount,
+              },
+            },
+          });
+        }
+
+        const bank = await db.bankAccount.findMany({
+          where: {
+            userId,
+            isActive: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        });
+
+        const uniqbank = bank[0].id;
+
+        await db.bankAccount.update({
+          where: {
+            id: uniqbank,
+          },
+          data: {
+            balance: {
+              decrement: amount,
+            },
+          },
+        });
 
         const transactions = await db.transaction.update({
           where: {

@@ -2,6 +2,7 @@
 
 import { CalendarDays, HardDriveUploadIcon, Repeat } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { formatCurrency } from "../lib/formatS";
 import { trpc } from "../server/trpc/client";
 import type { TransactionProps } from "../types/interfaces";
@@ -22,6 +23,7 @@ type DataProps = {
   handleEdite: (transaction: TransactionProps) => void;
   isSelected?: boolean;
   onSelect?: () => void;
+  onDeselect?: () => void;
 };
 
 const CardTransaction = ({
@@ -29,12 +31,46 @@ const CardTransaction = ({
   userId,
   isSelected = false,
   onSelect,
+  onDeselect,
   refetch,
   refetchTypes,
   handleDelete,
   handleEdite,
 }: DataProps) => {
   const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!transaction && isSelected) {
+      onDeselect?.();
+    }
+  }, [transaction, isSelected, onDeselect]);
+
+  const handleDeleteWithDeselect = (id: string) => {
+    if (isSelected) {
+      onDeselect?.();
+    }
+    handleDelete?.(id);
+  };
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect?.();
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    if (!(e.target instanceof HTMLElement)) return;
+
+    const interactiveElements = ["BUTTON", "A", "INPUT", "SELECT", "TEXTAREA"];
+
+    if (!interactiveElements.includes(e.target.tagName) && !isMenuOpen) {
+      onSelect?.();
+    }
+  };
+
+  const handleMenuOpen = (open: boolean) => {
+    setIsMenuOpen(open);
+  };
 
   if (!transaction) {
     return (
@@ -76,11 +112,12 @@ const CardTransaction = ({
     onError: (error) => console.error("Erro ao fixa transação:", error),
   });
 
-  const handleFixed = (id: string) => {
+  const handleFixed = async (id: string) => {
     fixedTransactionMutation.mutateAsync({
       originId: id,
       userId: userId as string,
     });
+    await refetchFixed();
   };
 
   const getTypeLabel = (frequency: string) => {
@@ -90,20 +127,6 @@ const CardTransaction = ({
       TRANSFER: "TRANSFERIR",
     };
     return labels[frequency as keyof typeof labels] || frequency;
-  };
-
-  const handleCheckboxClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onSelect?.();
-  };
-
-  const handleCardClick = (e: React.MouseEvent) => {
-    if (!(e.target instanceof HTMLElement)) return;
-
-    const interactiveElements = ["BUTTON", "A", "INPUT", "SELECT", "TEXTAREA"];
-    if (!interactiveElements.includes(e.target.tagName)) {
-      onSelect?.();
-    }
   };
 
   return (
@@ -125,13 +148,16 @@ const CardTransaction = ({
                 onCheckedChange={() => onSelect?.()}
               />
             </div>
-            <MenuDropdwonCard
-              handleDelete={handleDelete}
-              handleEdite={handleEdite}
-              transaction={transaction}
-              handleFixed={handleFixed}
-              isFixed={isFixed}
-            />
+            <div className="z-10">
+              <MenuDropdwonCard
+                handleDelete={handleDeleteWithDeselect}
+                handleEdite={handleEdite}
+                transaction={transaction}
+                handleFixed={handleFixed}
+                isFixed={isFixed}
+                onMenuOpenChange={handleMenuOpen}
+              />
+            </div>
           </div>
         </div>
 
