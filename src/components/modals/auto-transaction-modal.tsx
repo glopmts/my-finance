@@ -28,21 +28,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useTransactionForm } from "@/hooks/transaction-hooks/formReducer";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/server/trpc/client";
+import type { TransactionType } from "@/types/interfaces";
+import { TransactionType as TransactionTypeEnum } from "@/types/interfaces";
+import {
+  CATEGORY_TRANSLATIONS,
+  PAYMENTSOURCE_TRANSLATIONS,
+  PropsUser,
+} from "@/types/transaction-modal-types";
 import { CategoryEnum, PaymentSource } from "@prisma/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useTransactionForm } from "../../hooks/transaction-hooks/formReducer";
-import { trpc } from "../../server/trpc/client";
-import type { TransactionType } from "../../types/interfaces";
-import { TransactionType as TransactionTypeEnum } from "../../types/interfaces";
-import {
-  CATEGORY_TRANSLATIONS,
-  PAYMENTSOURCE_TRANSLATIONS,
-  PropsUser,
-} from "../../types/transaction-modal-types";
+
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
 
 interface SavedTitle {
   id: string;
@@ -185,15 +187,42 @@ const AutoTransactionModal = ({
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setOpen(true);
+        onOpenChange?.(true);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onOpenChange]);
+
+  const handleOpenKbd = () => {
+    handleOpenChange(true);
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {type === "create" && (
           <Button
             className="bg-cyan-500/35 text-white hover:bg-cyan-500/50 border rounded-3xl"
-            onClick={() => handleOpenChange(true)}
+            onClick={handleOpenKbd}
           >
             Adicionar Transação
+            <KbdGroup className="hidden md:block">
+              <Kbd
+                className={cn("bg-cyan-500/55 text-white hover:bg-cyan-500/50")}
+              >
+                Ctrl + K
+              </Kbd>
+            </KbdGroup>
           </Button>
         )}
       </DialogTrigger>

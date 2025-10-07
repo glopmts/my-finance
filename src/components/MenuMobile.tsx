@@ -45,7 +45,10 @@ const MenuMobile = ({ user, signOut }: UserPropsMenu) => {
               </AvatarFallback>
             </Avatar>
           </div>
-          <SheetTitle> {user.name || "G"}</SheetTitle>
+          <div className="flex flex-col gap-1.5">
+            <SheetTitle> {user.name || "G"}</SheetTitle>
+            <span className="text-sm text-zinc-300"> {user.email || "G"}</span>
+          </div>
         </SheetHeader>
         <Separator />
         <div className="w-full h-full flex flex-col gap-1.5 mt-3 p-3">
