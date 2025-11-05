@@ -64,6 +64,7 @@ const TransactionPage = () => {
     selectType,
     setTypeSelect,
     selectCategory,
+    allTransactions,
     setCategory,
   } = useTransactionHook(userId as string);
 
@@ -103,13 +104,13 @@ const TransactionPage = () => {
   ];
 
   return (
-    <div className="w-full min-h-screen h-full">
+    <div className="w-full flex min-h-screen h-full">
       <Header />
-      <div className="max-w-7xl w-full mx-auto p-2">
+      <div className="w-auto flex-1 h-full mt-4">
         <div className="pb-6">
           <h1 className="text-2xl font-semibold">Gerencia transações</h1>
           <span className="text-sm text-zinc-300">
-            Total transação: {selectedTransactions.length || 0}
+            Total transação: {allTransactions?.length || 0}
           </span>
         </div>
         <div className="w-full h-full">

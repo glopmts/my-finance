@@ -232,6 +232,7 @@ export function useTransactionHook(userId: string) {
     selectType,
     setTypeSelect,
     selectCategory,
+    allTransactions,
     setCategory,
   };
 }

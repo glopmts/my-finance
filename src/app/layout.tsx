@@ -12,7 +12,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Meu App Finan - Controle Financeiro Inteligente",
+  title: "Meu App Financia - Controle Financeiro Inteligente",
   description:
     "Aplicativo completo para gerenciar gastos, criar orçamentos e alcançar metas financeiras. Interface intuitiva e relatórios detalhados.",
   keywords: "finanças, controle gastos, orçamento, economia, dinheiro",

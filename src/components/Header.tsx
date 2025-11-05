@@ -21,13 +21,8 @@ import { ModeToggle } from "./ModeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "@/components/ui/navigation-menu";
 import MenuMobile from "./MenuMobile";
+import { Separator } from "./ui/separator";
 
 const Header = () => {
   const { data: userData, refetch } = trpc.auth.me.useQuery();
@@ -51,10 +46,10 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full h-auto dark:bg-zinc-950 bg-white z-20 sticky top-0">
-      <nav className="p-3 w-full h-full max-w-7xl mx-auto">
-        <div className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-6">
+    <header className="w-59 h-screen dark:bg-zinc-900 mr-8 bg-white top-0 sticky">
+      <nav className="w-full h-full">
+        <div className="flex flex-col h-full justify-between items-center w-full">
+          <div className="flex flex-col items-center gap-6 p-3">
             <Link href="/" passHref>
               <div className="flex gap-2.5 cursor-pointer">
                 <div className="relative w-12 h-12">
@@ -75,43 +70,45 @@ const Header = () => {
                 </div>
               </div>
             </Link>
-            <div className="flex items-center gap-2.5">
-              <NavigationMenu className="h-full *:h-full max-md:hidden">
-                <NavigationMenuList className="h-full gap-2">
+            <div className="flex flex-col gap-2.5 w-full">
+              <div className="h-full w-full *:h-full max-md:hidden">
+                <div className="h-full w-full flex flex-col gap-2">
                   {linksNavegation.map((link, index) => (
-                    <NavigationMenuItem key={index} className="h-full">
-                      <NavigationMenuLink
-                        active={pathame === link.href}
-                        href={link.href}
-                        className="text-muted-foreground hover:text-primary border-b-primary hover:border-b-primary data-[active]:border-b-primary h-full justify-center rounded-none border-y-2 border-transparent py-1.5 font-medium hover:bg-transparent data-[active]:bg-transparent!"
-                      >
-                        {link.label}
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
+                    <Button
+                      variant={pathame === link.href ? "default" : "secondary"}
+                      key={index}
+                      className="w-full"
+                      asChild
+                    >
+                      <Link href={link.href}>{link.label}</Link>
+                    </Button>
                   ))}
-                </NavigationMenuList>
-              </NavigationMenu>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <ModeToggle />
-            {!isClient ? (
-              <div className="w-auto">
-                <Loader size={26} className="animate-spin" />
-              </div>
-            ) : userData ? (
-              <>
-                <div className="w-auto hidden md:block">
-                  <MenuUser userData={userData} signOut={handleSignOut} />
+          <div className="relative w-full">
+            <Separator className="w-full absolute" />
+            <div className="flex items-center justify-between w-full gap-1.5 p-3">
+              {!isClient ? (
+                <div className="w-auto">
+                  <Loader size={26} className="animate-spin" />
                 </div>
-                <div className="block md:hidden">
-                  <MenuMobile user={userData} signOut={signOut} />
-                </div>
-              </>
-            ) : (
-              <AuthModal />
-            )}
+              ) : userData ? (
+                <>
+                  <div className="w-auto hidden md:block">
+                    <MenuUser userData={userData} signOut={handleSignOut} />
+                  </div>
+                  <div className="block md:hidden">
+                    <MenuMobile user={userData} signOut={signOut} />
+                  </div>
+                </>
+              ) : (
+                <AuthModal />
+              )}
+              <ModeToggle />
+            </div>
           </div>
         </div>
       </nav>
@@ -132,14 +129,14 @@ function MenuUser({ userData, signOut }: PropsMenu) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <Avatar className={cn("w-11 h-11 ")}>
+        <Avatar className={cn("w-9 h-9 ")}>
           <AvatarImage src={userData.image || ""} />
           <AvatarFallback className="bg-blue-800/40 border">
             {userData.name?.charAt(0) || "G"}
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="start">
         <div className="flex gap-2 items-center">
           <Avatar className={cn("w-10 h-10")}>
             <AvatarImage src={userData.image || ""} />

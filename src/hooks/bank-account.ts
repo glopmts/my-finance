@@ -39,11 +39,30 @@ export const InforBankUserHook = ({
   });
 
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [lastResetMonth, setLastResetMonth] = useState<string>("");
+
+  // Obter o mês atual no formato YYYY-MM
+  const currentMonth = useMemo(() => {
+    const currentDate = new Date();
+    return `${currentDate.getFullYear()}-${String(
+      currentDate.getMonth() + 1
+    ).padStart(2, "0")}`;
+  }, []);
+
+  // Efeito para resetar filtros quando o mês mudar
+  useEffect(() => {
+    if (currentMonth !== lastResetMonth) {
+      setSelectedMonth(currentMonth);
+      setSelectedType("all");
+      setSelectedCategory("all");
+      setLastResetMonth(currentMonth);
+    }
+  }, [currentMonth, lastResetMonth]);
+
 
   useEffect(() => {
     if (!mockSalaryData || mockSalaryData.length <= 1) return;
@@ -53,7 +72,7 @@ export const InforBankUserHook = ({
     }, autoPlayInterval);
 
     return () => clearInterval(interval);
-  }, [, mockSalaryData, autoPlayInterval]);
+  }, [mockSalaryData, autoPlayInterval]);
 
   const filteredTransactions = useMemo(() => {
     if (!mockTransaction) return [];
@@ -90,6 +109,20 @@ export const InforBankUserHook = ({
     return Array.from(months).sort().reverse();
   }, [mockTransaction]);
 
+    // Efeito para definir o mês atual como padrão quando os dados carregam
+  useEffect(() => {
+    if (mockTransaction && mockTransaction.length > 0 && selectedMonth === "all") {
+      const monthExists = availableMonths.includes(currentMonth);
+      if (monthExists) {
+        setSelectedMonth(currentMonth);
+      } else if (availableMonths.length > 0) {
+        // Se o mês atual não existe, usa o mês mais recente disponível
+        setSelectedMonth(availableMonths[0]);
+      }
+    }
+  }, [mockTransaction, availableMonths, currentMonth, selectedMonth]);
+
+
   const availableCategories = useMemo(() => {
     if (!mockTransaction) return [];
 
@@ -103,21 +136,6 @@ export const InforBankUserHook = ({
     return Array.from(categories).sort();
   }, [mockTransaction]);
 
-  useEffect(() => {
-    if (mockTransaction && mockTransaction.length > 0) {
-      const currentDate = new Date();
-      const currentMonth = `${currentDate.getFullYear()}-${String(
-        currentDate.getMonth() + 1
-      ).padStart(2, "0")}`;
-
-      const monthExists = availableMonths.includes(currentMonth);
-
-      if (monthExists) {
-        setSelectedMonth(currentMonth);
-      }
-    }
-  }, [mockTransaction, availableMonths]);
-
   const formatMonth = (monthKey: string) => {
     const [year, month] = monthKey.split("-");
     const date = new Date(Number.parseInt(year), Number.parseInt(month) - 1);
@@ -125,16 +143,16 @@ export const InforBankUserHook = ({
   };
 
   const clearFilters = () => {
-    setSelectedMonth("all");
+    setSelectedMonth(currentMonth); // Volta para o mês atual ao limpar
     setSelectedType("all");
     setSelectedCategory("all");
   };
 
   const activeFiltersCount = [
-    selectedMonth,
+    selectedMonth !== currentMonth ? selectedMonth : null,
     selectedType,
     selectedCategory,
-  ].filter((f) => f !== "all").length;
+  ].filter((f) => f !== "all" && f !== null).length;
 
   function calculateTotalExpenses(transactions: TransactionProps[]) {
     if (!Array.isArray(transactions)) return 0;
@@ -187,5 +205,6 @@ export const InforBankUserHook = ({
     calculateTotalIncome,
     setShowFilters,
     refetchTransaction,
+    currentMonth,
   };
 };

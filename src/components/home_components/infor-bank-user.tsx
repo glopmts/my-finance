@@ -5,7 +5,7 @@ import { InforBankUserHook } from "../../hooks/bank-account";
 import { SalaryCard } from "../cards-salary";
 import { DataAlert } from "../infor/DateAlert";
 import LoaderTypes from "../infor/LoaderTypes";
-import AutoBankAccountModal from "../modals/auto-bankAccount-modal";
+import AutoSalaryModal from "../modals/auto-salary-modal";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -50,9 +50,11 @@ const InforBankUser = () => {
     calculateTotalIncome,
     setShowFilters,
     refetchTransaction,
+    currentMonth,
   } = InforBankUserHook({
     typeInfor: "default",
   });
+
   if (isLoading || loader || loaderSalary || loaderUser) {
     return (
       <div className="w-full h-46 mt-8">
@@ -128,6 +130,7 @@ const InforBankUser = () => {
                     {availableMonths.map((month) => (
                       <SelectItem key={month} value={month}>
                         {formatMonth(month)}
+                        {month === currentMonth && " (Atual)"}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -242,7 +245,11 @@ const InforBankUser = () => {
               R$ {totalIncome.toFixed(2)}
             </div>
             <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-              {activeFiltersCount > 0 ? "Filtrado" : "Este mês"}
+              {selectedMonth === "all"
+                ? "Todos os meses"
+                : selectedMonth === currentMonth
+                ? "Este mês"
+                : formatMonth(selectedMonth)}
             </p>
           </CardContent>
         </Card>
@@ -272,15 +279,15 @@ const InforBankUser = () => {
             {mockSalaryData.length > 1 &&
               `(${currentIndex + 1}/${mockSalaryData.length})`}
           </h2>
-          {bankAccount?.length && bankAccount?.length > 0 ? (
-            <AutoBankAccountModal
+          {mockSalaryData?.length && mockSalaryData?.length > 0 ? (
+            <AutoSalaryModal
               type="update"
               userId={userData?.id as string}
               refetch={refetch}
-              bankData={bankAccount[0]}
+              salaryData={mockSalaryData[0]}
             />
           ) : (
-            <AutoBankAccountModal
+            <AutoSalaryModal
               type="create"
               userId={userData?.id as string}
               refetch={refetch}

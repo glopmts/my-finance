@@ -1,6 +1,5 @@
 "use client";
 
-import { MonthlyBalanceCard } from "../components/cards/MonthlyBalanceCard";
 import CategoryTransactions from "../components/categorys-transactions";
 import Header from "../components/Header";
 import FixedHome from "../components/home_components/fixed-cards";
@@ -28,9 +27,9 @@ export default function Home() {
   }
 
   return (
-    <div className="w-full min-h-screen h-full">
+    <div className="w-full min-h-screen h-full flex">
       <Header />
-      <div className="mx-auto max-w-7xl p-2 mt-4 w-full">
+      <div className="flex-1 h-full w-full mt-4 mr-8">
         <div className="w-full">
           <InforBankUser />
         </div>
@@ -40,9 +39,9 @@ export default function Home() {
         {/* <div className="w-full">
           <SendReportButton />
         </div> */}
-        <div className="w-full mt-6">
+        {/* <div className="w-full mt-6">
           <MonthlyBalanceCard userId={userId} />
-        </div>
+        </div> */}
         <div className="w-full">
           <FixedHome userId={userId} />
         </div>
