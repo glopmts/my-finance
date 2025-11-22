@@ -35,7 +35,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import { trpc } from "../../server/trpc/client";
+import { trpc } from "../../server/trpc/context/client";
 
 type SalaryData = {
   userId: string;

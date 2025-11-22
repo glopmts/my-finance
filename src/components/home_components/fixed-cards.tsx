@@ -1,7 +1,7 @@
 "use client";
 
 import { formatCurrency } from "@/lib/formatS";
-import { trpc } from "@/server/trpc/client";
+import { trpc } from "@/server/trpc/context/client";
 import { getFrequencyLabel } from "@/utils/infor-cards";
 import { DollarSign, Pin, Repeat, TrendingUp } from "lucide-react";
 import { formatDate } from "../../utils/formatDate";

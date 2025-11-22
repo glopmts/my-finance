@@ -2,6 +2,7 @@
 
 import { useSignIn } from "@clerk/nextjs";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export const useLogin = () => {
   const {
@@ -61,16 +62,12 @@ export const useLogin = () => {
     setError("");
 
     try {
-      console.log("[v0] Login verify started with code:", code);
-
       if (!signIn) throw new Error("SignIn instance not ready");
 
       const result = await signIn.attemptFirstFactor({
         strategy: "email_code",
         code,
       });
-
-      console.log("[v0] Login verify result:", result.status);
 
       if (result.status === "complete") {
         await signInActive({ session: result.createdSessionId });
@@ -79,7 +76,7 @@ export const useLogin = () => {
 
       throw new Error("Verificação incompleta");
     } catch (err) {
-      console.log("[v0] Login verify error:", err);
+      toast.error("Ocorreu um erro durante a verificação. Tente novamente.");
       const errorMessage =
         err instanceof Error ? err.message : "Erro na verificação";
       setError(errorMessage);

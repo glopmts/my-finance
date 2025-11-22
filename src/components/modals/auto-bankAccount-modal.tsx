@@ -24,7 +24,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { $Enums } from "@prisma/client";
 import { useState } from "react";
-import { trpc } from "../../server/trpc/client";
+import { trpc } from "../../server/trpc/context/client";
 
 type BankTypes = {
   userId: string;

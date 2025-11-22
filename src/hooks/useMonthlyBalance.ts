@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
-import { trpc } from "../server/trpc/client";
+import { trpc } from "../server/trpc/context/client";
 
 export function useMonthlyBalance(userId: string) {
   const queryClient = useQueryClient();

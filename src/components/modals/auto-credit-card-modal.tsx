@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "../../server/trpc/client";
+import { trpc } from "../../server/trpc/context/client";
 import { CreditCard } from "../../types/interfaces";
 
 type PropsCard = {

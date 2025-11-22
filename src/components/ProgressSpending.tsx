@@ -1,6 +1,6 @@
 "use client";
 
-import { trpc } from "@/server/trpc/client";
+import { trpc } from "@/server/trpc/context/client";
 import {
   addMonths,
   calculateTotalExpenses,

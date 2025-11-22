@@ -3,7 +3,7 @@
 import { CategoryEnum } from "@prisma/client";
 import { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { trpc } from "../server/trpc/client";
+import { trpc } from "../server/trpc/context/client";
 import { CATEGORY_CONFIG } from "../utils/transactions-utils/category_config";
 import {
   Card,
