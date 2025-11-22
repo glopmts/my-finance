@@ -16,11 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -30,7 +25,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useTransactionForm } from "@/hooks/transaction-hooks/formReducer";
 import { cn } from "@/lib/utils";
-import { trpc } from "@/server/trpc/client";
+import { trpc } from "@/server/trpc/context/client";
 import type { TransactionType } from "@/types/interfaces";
 import { TransactionType as TransactionTypeEnum } from "@/types/interfaces";
 import {
@@ -45,6 +40,12 @@ import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Spinner } from "../ui/spinner";
 
 interface SavedTitle {
   id: string;
@@ -65,6 +66,7 @@ const AutoTransactionModal = ({
   const [open, setOpen] = useState(isOpen || false);
   const [loading, setLoading] = useState(false);
   const [savedTitles, setSavedTitles] = useState<SavedTitle[]>([]);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Usando o hook customizado
   const { formState, setField, resetForm } = useTransactionForm(
@@ -184,6 +186,7 @@ const AutoTransactionModal = ({
     onOpenChange?.(newOpen);
     if (!newOpen) {
       handleFormReset();
+      setCalendarOpen(false);
     }
   };
 
@@ -205,6 +208,17 @@ const AutoTransactionModal = ({
 
   const handleOpenKbd = () => {
     handleOpenChange(true);
+  };
+
+  // Função para lidar com a seleção de data
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setField("date", date);
+      // Não fechar o popover imediatamente - deixar o usuário ver a seleção
+      setTimeout(() => {
+        setCalendarOpen(false);
+      }, 150);
+    }
   };
 
   return (
@@ -258,8 +272,8 @@ const AutoTransactionModal = ({
             />
           </div>
 
-          <div className="flex md:justify-between w-full flex-wrap">
-            <div className="space-y-2">
+          <div className="flex md:justify-between w-full flex-wrap gap-2">
+            <div className="space-y-2 flex-1 min-w-[120px]">
               <Label htmlFor="type">Tipo *</Label>
               <Select
                 value={formState.transactionType}
@@ -284,7 +298,7 @@ const AutoTransactionModal = ({
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex-1 min-w-[120px]">
               <Label htmlFor="category">Categoria *</Label>
               <Select
                 value={formState.transactionCategory}
@@ -305,7 +319,7 @@ const AutoTransactionModal = ({
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 flex-1 min-w-[120px]">
               <Label htmlFor="paymentSource">Tipo Pagamento *</Label>
               <Select
                 value={formState.transactionPaymentSource}
@@ -361,11 +375,13 @@ const AutoTransactionModal = ({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Data *</Label>
-            <Popover>
+          {/* CORREÇÃO DO DATE PICKER - Versão melhorada */}
+          <div className="space-y-2 w-full">
+            <Label htmlFor="date">Data *</Label>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
@@ -380,14 +396,21 @@ const AutoTransactionModal = ({
                   )}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent
+                className="w-auto p-0"
+                align="start"
+                onInteractOutside={(e) => {
+                  // Prevenir que o popover feche imediatamente ao interagir com o calendário
+                  e.preventDefault();
+                }}
+              >
                 <Calendar
                   mode="single"
                   selected={formState.date}
-                  onSelect={(selectedDate) =>
-                    selectedDate && setField("date", selectedDate)
-                  }
+                  onSelect={handleDateSelect}
+                  locale={ptBR}
                   initialFocus
+                  className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
@@ -428,11 +451,15 @@ const AutoTransactionModal = ({
               disabled={!isFormValid || loading}
               className="bg-cyan-500 hover:bg-cyan-600"
             >
-              {loading
-                ? "Processando..."
-                : type === "create"
-                ? "Criar Transação"
-                : "Atualizar Transação"}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <Spinner /> Processando...
+                </span>
+              ) : type === "create" ? (
+                "Criar Transação"
+              ) : (
+                "Atualizar Transação"
+              )}
             </Button>
           </DialogFooter>
         </form>

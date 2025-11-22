@@ -14,7 +14,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cn } from "../lib/utils";
-import { trpc } from "../server/trpc/client";
+import { trpc } from "../server/trpc/context/client";
 import { linksNavegation } from "../utils/navegation-links";
 import AuthModal from "./auth_components/auth-modal";
 import { ModeToggle } from "./ModeToggle";

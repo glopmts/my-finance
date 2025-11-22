@@ -27,6 +27,8 @@ model User {
   MonthlyBalance MonthlyBalance[]
   CacreditCard   CreditCard[]
   BankAccount    BankAccount[]
+
+  recurringFolders RecurringFolder[]
 }
 
 enum AccountType {
@@ -66,6 +68,7 @@ model Transaction {
   creditCard       CreditCard?     @relation(fields: [creditCardId], references: [id])
   BankAccount      BankAccount?    @relation(fields: [bankAccountId], references: [id])
   bankAccountId    String?
+  recurringFolders RecurringFolder[] @relation("TransactionRecurringFolders")
 
   @@index([userId])
   @@index([date])
@@ -142,11 +145,6 @@ model FinancialGoals {
   @@index([bankAccountId])
 }
 
-enum GoalType {
-  EXPENSE
-  SAVING
-  INVESTMENT
-}
 
 model Salary {
   id          String    @id @default(cuid())
@@ -218,6 +216,26 @@ model CreditCard {
   @@map("credit_cards")
 }
 
+
+model RecurringFolder {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  frequency   Frequency @default(MONTHLY)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+
+  transactions Transaction[] @relation("TransactionRecurringFolders")
+
+  @@index([userId])
+  @@map("recurringFolders")
+}
+
+
 enum TransactionType {
   INCOME
   EXPENSE
@@ -238,6 +256,7 @@ enum TransactionTypeFile {
   NULL
 }
 
+
 enum CategoryEnum {
   TRANSPORTATION
   FOOD
@@ -257,5 +276,11 @@ enum PaymentSource {
   CASH
   PIX
   DEBIT_CARD
+  INVESTMENT
+}
+
+enum GoalType {
+  EXPENSE
+  SAVING
   INVESTMENT
 }

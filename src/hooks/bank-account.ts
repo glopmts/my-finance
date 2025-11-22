@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { trpc } from "../server/trpc/client";
+import { trpc } from "../server/trpc/context/client";
 import { TransactionProps } from "../types/interfaces";
 
 type PropsInfor = {
@@ -63,7 +63,6 @@ export const InforBankUserHook = ({
     }
   }, [currentMonth, lastResetMonth]);
 
-
   useEffect(() => {
     if (!mockSalaryData || mockSalaryData.length <= 1) return;
 
@@ -109,9 +108,13 @@ export const InforBankUserHook = ({
     return Array.from(months).sort().reverse();
   }, [mockTransaction]);
 
-    // Efeito para definir o mês atual como padrão quando os dados carregam
+  // Efeito para definir o mês atual como padrão quando os dados carregam
   useEffect(() => {
-    if (mockTransaction && mockTransaction.length > 0 && selectedMonth === "all") {
+    if (
+      mockTransaction &&
+      mockTransaction.length > 0 &&
+      selectedMonth === "all"
+    ) {
       const monthExists = availableMonths.includes(currentMonth);
       if (monthExists) {
         setSelectedMonth(currentMonth);
@@ -121,7 +124,6 @@ export const InforBankUserHook = ({
       }
     }
   }, [mockTransaction, availableMonths, currentMonth, selectedMonth]);
-
 
   const availableCategories = useMemo(() => {
     if (!mockTransaction) return [];

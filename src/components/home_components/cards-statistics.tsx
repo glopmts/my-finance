@@ -1,6 +1,6 @@
 "use client";
 
-import { trpc } from "@/server/trpc/client";
+import { trpc } from "@/server/trpc/context/client";
 import type { TransactionProps } from "@/types/interfaces";
 import { endOfMonth, isWithinInterval, parseISO, startOfMonth } from "date-fns";
 import { Loader } from "lucide-react";

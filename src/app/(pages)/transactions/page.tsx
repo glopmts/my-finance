@@ -6,7 +6,7 @@ import UnauthenticatedHome from "@/components/home_components/UnauthenticatedHom
 import AutoTransactionModal from "@/components/modals/auto-transaction-modal";
 import { Button } from "@/components/ui/button";
 import { useTransactionHook } from "@/hooks/transaction-hooks/transaction";
-import { trpc } from "@/server/trpc/client";
+import { trpc } from "@/server/trpc/context/client";
 import {
   ChevronDown,
   DollarSign,

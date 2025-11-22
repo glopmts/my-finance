@@ -6,7 +6,7 @@ import FixedHome from "../components/home_components/fixed-cards";
 import InforBankUser from "../components/home_components/infor-bank-user";
 import TransactionsHome from "../components/home_components/transactions-home";
 import UnauthenticatedHome from "../components/home_components/UnauthenticatedHome";
-import { trpc } from "../server/trpc/client";
+import { trpc } from "../server/trpc/context/client";
 
 export default function Home() {
   const { data: userData, isLoading } = trpc.auth.me.useQuery();
@@ -33,15 +33,6 @@ export default function Home() {
         <div className="w-full">
           <InforBankUser />
         </div>
-        <div className="w-full">
-          {/* <CardsStatistics userId={userId} /> */}
-        </div>
-        {/* <div className="w-full">
-          <SendReportButton />
-        </div> */}
-        {/* <div className="w-full mt-6">
-          <MonthlyBalanceCard userId={userId} />
-        </div> */}
         <div className="w-full">
           <FixedHome userId={userId} />
         </div>

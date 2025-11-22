@@ -9,7 +9,7 @@ import {
 } from "date-fns";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { trpc } from "../../server/trpc/client";
+import { trpc } from "../../server/trpc/context/client";
 import { TransactionProps } from "../../types/interfaces";
 
 type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER" | "ALL";
