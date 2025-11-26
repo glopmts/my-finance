@@ -1,5 +1,5 @@
 import { db } from "@/lib/prisma";
-import { Frequency, TransactionType } from "@prisma/client";
+import { CategoryEnum, Frequency } from "@prisma/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { object, z } from "zod";
 
@@ -14,6 +14,8 @@ const createFolderInput = object({
   isActive: z.boolean().default(true),
   transactionIds: z.array(z.string()).optional(),
   frequency: z.nativeEnum(Frequency),
+  color: z.string().optional(),
+  category: z.nativeEnum(CategoryEnum).optional(),
 });
 
 export const foldersRouter = router({
@@ -21,15 +23,15 @@ export const foldersRouter = router({
     .input(
       object({
         userId: z.string().min(1),
-        transactionType: z.nativeEnum(TransactionType),
+        category: z.nativeEnum(CategoryEnum).optional(),
       })
     )
     .query(async ({ input }) => {
       try {
-        if (!input.transactionType || !input.transactionType.length) {
+        if (!input.category || !input.category.length) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Tipo de transação é obrigatório",
+            message: "Categoria é obrigatória",
           });
         }
 
@@ -38,7 +40,7 @@ export const foldersRouter = router({
             userId: input.userId,
             transactions: {
               some: {
-                type: input.transactionType,
+                category: input.category || CategoryEnum.OTHER,
               },
             },
           },
@@ -67,6 +69,8 @@ export const foldersRouter = router({
           isActive,
           transactionIds,
           frequency,
+          color,
+          category,
         } = input;
 
         if (!userId || !name || !frequency) {
@@ -83,6 +87,8 @@ export const foldersRouter = router({
             description,
             isActive,
             frequency,
+            color,
+            category,
             transactions: transactionIds
               ? {
                   connect: transactionIds.map((id) => ({ id })),
@@ -211,12 +217,22 @@ export const foldersRouter = router({
         description: z.string().max(255).optional(),
         isActive: z.boolean().optional(),
         frequency: z.nativeEnum(Frequency).optional(),
+        color: z.string().optional(),
+        category: z.nativeEnum(CategoryEnum).optional(),
       })
     )
     .mutation(async ({ input }) => {
       try {
-        const { folderId, name, description, isActive, frequency, userId } =
-          input;
+        const {
+          folderId,
+          name,
+          description,
+          isActive,
+          frequency,
+          color,
+          category,
+          userId,
+        } = input;
 
         if (!folderId || !userId) {
           throw new TRPCError({
@@ -243,6 +259,8 @@ export const foldersRouter = router({
             description,
             isActive,
             frequency,
+            color,
+            category,
           },
           include: {
             transactions: true,

@@ -63,3 +63,17 @@ export type CreditCard = {
   createdAt: Date | string;
   updatedAt: Date | string;
 };
+
+export interface RecurringFolderProps {
+  name: string;
+  id: string;
+  description: string | null;
+  frequency: $Enums.Frequency;
+  isActive: boolean;
+
+  userId: string;
+  color: string | null;
+  category: CategoryEnum;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}

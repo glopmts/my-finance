@@ -1,10 +1,10 @@
 "use client";
 
-import AuthModal from "../auth_components/auth-modal";
+import AuthModal from "@/components/auth_components/auth-modal";
 
-export default function UnauthenticatedHome() {
+const AuthPage = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
       {/* Header */}
       <section className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -132,4 +132,6 @@ export default function UnauthenticatedHome() {
       </section>
     </div>
   );
-}
+};
+
+export default AuthPage;

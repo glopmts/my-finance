@@ -30,7 +30,9 @@ import {
   Loader2,
   Mail,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type AuthModalProps = {
   children?: React.ReactNode;
@@ -52,6 +54,7 @@ const AuthModal = ({
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"auth" | "verify">("auth");
+  const router = useRouter();
 
   const loading =
     authType === "login" ? loginHook.loading : registerHook.loading;
@@ -94,12 +97,6 @@ const AuthModal = ({
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(
-      "[v0] Verify button clicked, authType:",
-      authType,
-      "code:",
-      code
-    );
 
     const result =
       authType === "login"
@@ -110,9 +107,16 @@ const AuthModal = ({
       handleClose();
       if (result.success) {
         handleClose();
-        if (onSuccess) onSuccess();
-        window.location.reload();
+        if (onSuccess) {
+          onSuccess();
+        }
+        router.push("/");
       }
+      toast.success(
+        authType === "login"
+          ? "Login realizado com sucesso!"
+          : "Conta criada com sucesso!"
+      );
     }
   };
 
@@ -153,7 +157,7 @@ const AuthModal = ({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md dark:bg-zinc-900 border">
         <DialogHeader className="space-y-3">
           <DialogTitle className="text-center text-2xl font-bold">
             {step === "verify"
