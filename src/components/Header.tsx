@@ -22,7 +22,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 
 import MenuMobile from "./MenuMobile";
-import { Separator } from "./ui/separator";
 
 const Header = () => {
   const { data: userData, refetch } = trpc.auth.me.useQuery();
@@ -73,23 +72,53 @@ const Header = () => {
             <div className="flex flex-col gap-2.5 w-full">
               <div className="h-full w-full *:h-full max-md:hidden">
                 <div className="h-full w-full flex flex-col gap-2">
-                  {linksNavegation.map((link, index) => (
-                    <Button
-                      variant={pathame === link.href ? "default" : "secondary"}
-                      key={index}
-                      className="w-full"
-                      asChild
-                    >
-                      <Link href={link.href}>{link.label}</Link>
-                    </Button>
-                  ))}
+                  {linksNavegation.map((link, index) => {
+                    const isActive = pathame === link.href;
+
+                    return (
+                      <Button
+                        variant="secondary"
+                        key={index}
+                        className={cn(
+                          "w-full justify-start relative overflow-hidden",
+                          "transition-all duration-300 ease-out",
+                          "border-r-4",
+                          isActive
+                            ? "border-blue-500"
+                            : "border-transparent hover:border-blue-300"
+                        )}
+                        asChild
+                      >
+                        <Link href={link.href}>
+                          <div
+                            className={cn(
+                              "absolute right-0 top-0 bottom-0",
+                              "bg-linear-to-l from-blue-500/20 via-blue-500/10 to-transparent",
+                              "transition-all duration-500 ease-out",
+                              isActive ? "w-1/2 opacity-100" : "w-0 opacity-0"
+                            )}
+                          />
+
+                          <span
+                            className={cn(
+                              "relative z-10 transition-colors duration-300",
+                              isActive &&
+                                "text-blue-600 dark:text-blue-400 font-semibold"
+                            )}
+                          >
+                            {link.label}
+                          </span>
+                        </Link>
+                      </Button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
           </div>
 
           <div className="relative w-full">
-            <Separator className="w-full absolute" />
+            {/* <Separator className="w-full absolute" /> */}
             <div className="flex items-center justify-between w-full gap-1.5 p-3">
               {!isClient ? (
                 <div className="w-auto">
@@ -97,7 +126,7 @@ const Header = () => {
                 </div>
               ) : userData ? (
                 <>
-                  <div className="w-auto hidden md:block">
+                  <div className="w-full hidden md:block">
                     <MenuUser userData={userData} signOut={handleSignOut} />
                   </div>
                   <div className="block md:hidden">
@@ -107,7 +136,6 @@ const Header = () => {
               ) : (
                 <AuthModal />
               )}
-              <ModeToggle />
             </div>
           </div>
         </div>
@@ -127,40 +155,45 @@ type PropsMenu = {
 
 function MenuUser({ userData, signOut }: PropsMenu) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Avatar className={cn("w-9 h-9 ")}>
-          <AvatarImage src={userData.image || ""} />
-          <AvatarFallback className="bg-blue-800/40 border">
-            {userData.name?.charAt(0) || "G"}
-          </AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        <div className="flex gap-2 items-center">
-          <Avatar className={cn("w-10 h-10")}>
-            <AvatarImage src={userData.image || ""} />
-            <AvatarFallback className="bg-blue-800/40 border">
-              {userData.name?.charAt(0) || "G"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="">
-            <span className="truncate line-clamp-1">
-              {userData.name || "G"}
-            </span>
-            <span className="truncate line-clamp-1">{userData.email}</span>
+    <div className="flex w-full justify-between items-center dark:bg-zinc-900 border rounded-2xl p-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="flex-1 flex items-center cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg p-1">
+            <Avatar className={cn("w-9 h-9")}>
+              <AvatarImage src={userData.image || ""} />
+              <AvatarFallback className="bg-blue-800/40 border">
+                {userData.name?.charAt(0) || "G"}
+              </AvatarFallback>
+            </Avatar>
           </div>
-        </div>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <Button variant="destructive" className="w-full" onClick={signOut}>
-            <LogOutIcon className="text-white" size={20} />
-            Sair
-          </Button>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <div className="flex gap-2 items-center p-2">
+            <Avatar className={cn("w-10 h-10")}>
+              <AvatarImage src={userData.image || ""} />
+              <AvatarFallback className="bg-blue-800/40 border">
+                {userData.name?.charAt(0) || "G"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="">
+              <span className="truncate line-clamp-1">
+                {userData.name || "G"}
+              </span>
+              <span className="truncate line-clamp-1">{userData.email}</span>
+            </div>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem>
+            <Button variant="destructive" className="w-full" onClick={signOut}>
+              <LogOutIcon className="text-white" size={20} />
+              Sair
+            </Button>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ModeToggle />
+    </div>
   );
 }
-
 export default Header;

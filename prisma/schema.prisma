@@ -221,9 +221,11 @@ model RecurringFolder {
   id          String    @id @default(cuid())
   name        String
   description String?
-  frequency   Frequency @default(MONTHLY)
+  category    CategoryEnum @default(OTHER)
   isActive    Boolean   @default(true)
   createdAt   DateTime  @default(now())
+  frequency   Frequency @default(MONTHLY)
+  color      String? 
   updatedAt   DateTime  @updatedAt
 
   userId      String

@@ -2,7 +2,6 @@
 
 import CardTransaction from "@/components/cards-transaction";
 import Header from "@/components/Header";
-import UnauthenticatedHome from "@/components/home_components/UnauthenticatedHome";
 import AutoTransactionModal from "@/components/modals/auto-transaction-modal";
 import { Button } from "@/components/ui/button";
 import { useTransactionHook } from "@/hooks/transaction-hooks/transaction";
@@ -15,6 +14,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -41,6 +41,7 @@ type CategoryEnum =
 const TransactionPage = () => {
   const { data: userData, isLoading: loader } = trpc.auth.me.useQuery();
   const userId = userData?.id;
+  const router = useRouter();
 
   const {
     handleSelectTransaction,
@@ -79,7 +80,7 @@ const TransactionPage = () => {
   }
 
   if (!userId) {
-    return <UnauthenticatedHome />;
+    return router.push("/unauthenticated");
   }
 
   const transactionTypeOptions: { value: TransactionType; label: string }[] = [

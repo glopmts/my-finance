@@ -1,16 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import CategoryTransactions from "../components/categorys-transactions";
 import Header from "../components/Header";
 import FixedHome from "../components/home_components/fixed-cards";
 import InforBankUser from "../components/home_components/infor-bank-user";
 import TransactionsHome from "../components/home_components/transactions-home";
-import UnauthenticatedHome from "../components/home_components/UnauthenticatedHome";
 import { trpc } from "../server/trpc/context/client";
 
 export default function Home() {
   const { data: userData, isLoading } = trpc.auth.me.useQuery();
   const userId = userData?.id;
+  const router = useRouter();
 
   if (isLoading) {
     return (
@@ -22,8 +23,8 @@ export default function Home() {
     );
   }
 
-  if (!userId) {
-    return <UnauthenticatedHome />;
+  if (!userId || userId === undefined || userId === null) {
+    return router.push("/unauthenticated");
   }
 
   return (
