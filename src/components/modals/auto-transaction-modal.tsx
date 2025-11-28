@@ -45,7 +45,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Spinner } from "../ui/spinner";
+import { useFolders } from "../../hooks/use-folders";
+import { ButtonFallback } from "../button-fallback";
+import { FolderCard } from "../folder-component";
 
 interface SavedTitle {
   id: string;
@@ -67,12 +69,15 @@ const AutoTransactionModal = ({
   const [loading, setLoading] = useState(false);
   const [savedTitles, setSavedTitles] = useState<SavedTitle[]>([]);
   const [calendarOpen, setCalendarOpen] = useState(false);
-
+  const { foldersTypes } = useFolders({
+    userId,
+  });
   // Usando o hook customizado
   const { formState, setField, resetForm } = useTransactionForm(
     transactionData,
     type
   );
+  const [selectedFolderId, onSelectFolder] = useState<string | null>(null);
 
   const mutationCreater = trpc.transaction.createTransaction.useMutation();
   const mutationUpdate = trpc.transaction.updateTransactions.useMutation();
@@ -151,6 +156,7 @@ const AutoTransactionModal = ({
         recurringId: formState.recurringId || undefined,
         category: formState.transactionCategory,
         paymentSource: formState.transactionPaymentSource,
+        folderId: selectedFolderId || undefined,
       };
 
       if (type === "create") {
@@ -221,14 +227,19 @@ const AutoTransactionModal = ({
     }
   };
 
+  const handleFolderSelect = (folderId: string) => {
+    if (selectedFolderId === folderId) {
+      onSelectFolder(null);
+    } else {
+      onSelectFolder(folderId);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {type === "create" && (
-          <Button
-            className="bg-cyan-500/35 text-white hover:bg-cyan-500/50 border rounded-3xl"
-            onClick={handleOpenKbd}
-          >
+          <Button variant="cyan" onClick={handleOpenKbd}>
             Adicionar Transação
             <KbdGroup className="hidden md:block">
               <Kbd
@@ -241,7 +252,7 @@ const AutoTransactionModal = ({
         )}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[700px] overflow-y-scroll h-[90vh]">
         <DialogHeader>
           <DialogTitle>
             {type === "create"
@@ -260,14 +271,20 @@ const AutoTransactionModal = ({
             <Label htmlFor="amount">Valor *</Label>
             <Input
               id="amount"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formState.amount || ""}
-              onChange={(e) =>
-                setField("amount", Number.parseFloat(e.target.value) || 0)
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*[.,]?[0-9]*"
+              value={
+                formState.amount !== undefined
+                  ? String(formState.amount).replace(".", ",")
+                  : ""
               }
-              placeholder="0.00"
+              onChange={(e) => {
+                const value = e.target.value.replace(",", ".");
+                const parsed = Number.parseFloat(value);
+                setField("amount", isNaN(parsed) ? 0 : parsed);
+              }}
+              placeholder="0,00"
               required
             />
           </div>
@@ -400,7 +417,6 @@ const AutoTransactionModal = ({
                 className="w-auto p-0"
                 align="start"
                 onInteractOutside={(e) => {
-                  // Prevenir que o popover feche imediatamente ao interagir com o calendário
                   e.preventDefault();
                 }}
               >
@@ -427,13 +443,18 @@ const AutoTransactionModal = ({
 
           {formState.isRecurring && (
             <div className="space-y-2">
-              <Label htmlFor="recurringId">ID de Recorrência</Label>
-              <Input
-                id="recurringId"
-                value={formState.recurringId}
-                onChange={(e) => setField("recurringId", e.target.value)}
-                placeholder="ID opcional para agrupar transações recorrentes"
-              />
+              <div className="flex items-center gap-2.5">
+                {foldersTypes?.map((folder) => (
+                  <FolderCard
+                    key={folder.id}
+                    id={folder.id}
+                    name={folder.name}
+                    color={folder.color}
+                    isSelected={selectedFolderId === folder.id}
+                    onSelect={handleFolderSelect}
+                  />
+                ))}
+              </div>
             </div>
           )}
 
@@ -446,21 +467,14 @@ const AutoTransactionModal = ({
             >
               Cancelar
             </Button>
-            <Button
+            <ButtonFallback
               type="submit"
               disabled={!isFormValid || loading}
-              className="bg-cyan-500 hover:bg-cyan-600"
-            >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <Spinner /> Processando...
-                </span>
-              ) : type === "create" ? (
-                "Criar Transação"
-              ) : (
-                "Atualizar Transação"
-              )}
-            </Button>
+              variant="cyan"
+              text={
+                type === "create" ? "Adicionar Transação" : "Salvar Alterações"
+              }
+            />
           </DialogFooter>
         </form>
       </DialogContent>

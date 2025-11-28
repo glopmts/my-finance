@@ -152,7 +152,7 @@ export default function UploadFile({
               {/* Info Box */}
               <div className="bg-slate-50 dark:bg-zinc-900 rounded-lg p-4 border border-zinc-200 dark:border-zinc-600">
                 <div className="flex items-start space-x-3">
-                  <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                  <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Formato CSV esperado:

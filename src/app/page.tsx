@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <div className="w-full min-h-screen h-full flex">
       <Header />
-      <div className="flex-1 h-full w-full mt-4 mr-8">
+      <div className="flex-1 h-full w-full mt-4 md:mr-8 p-4 md:p-0">
         <div className="w-full">
           <InforBankUser />
         </div>

@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { trpc } from "../../server/trpc/context/client";
 import { CreditCard } from "../../types/interfaces";
+import { ButtonFallback } from "../button-fallback";
 
 type PropsCard = {
   type: "create" | "update";
@@ -190,10 +191,7 @@ const CreditCardModal = ({ type, card, userId, onSuccess }: PropsCard) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          className="bg-cyan-500/35 text-white hover:bg-cyan-500/50 border rounded-3xl"
-          onClick={() => setOpen(true)}
-        >
+        <Button variant="cyan" onClick={() => setOpen(true)}>
           {type === "create" ? "+ Adicionar Cartão" : "Editar Cartão"}
         </Button>
       </DialogTrigger>
@@ -359,13 +357,14 @@ const CreditCardModal = ({ type, card, userId, onSuccess }: PropsCard) => {
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading
-                ? "Salvando..."
-                : type === "create"
-                ? "Criar Cartão"
-                : "Atualizar Cartão"}
-            </Button>
+            <ButtonFallback
+              type="submit"
+              variant="cyan"
+              text={
+                type === "create" ? "Adicionar Cartão" : "Salvar Alterações"
+              }
+              disabled={loading}
+            />
           </DialogFooter>
         </form>
       </DialogContent>
