@@ -36,6 +36,7 @@ import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "../../server/trpc/context/client";
+import { ButtonFallback } from "../button-fallback";
 
 type SalaryData = {
   userId: string;
@@ -131,10 +132,7 @@ const AutoSalaryModal = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          className="bg-cyan-500/35 text-white hover:bg-cyan-500/50 border rounded-3xl"
-          onClick={() => setOpen(true)}
-        >
+        <Button variant="cyan" onClick={() => setOpen(true)}>
           {type === "create" ? "+ Adicionar Salário" : "Editar Salário"}
         </Button>
       </DialogTrigger>
@@ -252,17 +250,14 @@ const AutoSalaryModal = ({
             >
               Cancelar
             </Button>
-            <Button
+            <ButtonFallback
               type="submit"
               disabled={!isFormValid || loading}
-              className="bg-cyan-500 hover:bg-cyan-600"
-            >
-              {loading
-                ? "Processando..."
-                : type === "create"
-                ? "Criar Salário"
-                : "Atualizar Salário"}
-            </Button>
+              variant="cyan"
+              text={
+                type === "create" ? "Adicionar Salário" : "Salvar Alterações"
+              }
+            />
           </DialogFooter>
         </form>
       </DialogContent>

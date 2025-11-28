@@ -22,6 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 
 import MenuMobile from "./MenuMobile";
+import ModalFolder from "./modals/modal-folders";
 
 const Header = () => {
   const { data: userData, refetch } = trpc.auth.me.useQuery();
@@ -45,7 +46,7 @@ const Header = () => {
   };
 
   return (
-    <header className="w-59 h-screen dark:bg-zinc-900 mr-8 bg-white top-0 sticky">
+    <header className="hidden md:block w-59 h-screen dark:bg-zinc-900 mr-8 bg-white top-0 sticky">
       <nav className="w-full h-full">
         <div className="flex flex-col h-full justify-between items-center w-full">
           <div className="flex flex-col items-center gap-6 p-3">
@@ -146,6 +147,7 @@ const Header = () => {
 
 type PropsMenu = {
   userData: {
+    id: string;
     image: string | null;
     name: string | null;
     email: string;
@@ -155,45 +157,55 @@ type PropsMenu = {
 
 function MenuUser({ userData, signOut }: PropsMenu) {
   return (
-    <div className="flex w-full justify-between items-center dark:bg-zinc-900 border rounded-2xl p-2">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <div className="flex-1 flex items-center cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg p-1">
-            <Avatar className={cn("w-9 h-9")}>
-              <AvatarImage src={userData.image || ""} />
-              <AvatarFallback className="bg-blue-800/40 border">
-                {userData.name?.charAt(0) || "G"}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <div className="flex gap-2 items-center p-2">
-            <Avatar className={cn("w-10 h-10")}>
-              <AvatarImage src={userData.image || ""} />
-              <AvatarFallback className="bg-blue-800/40 border">
-                {userData.name?.charAt(0) || "G"}
-              </AvatarFallback>
-            </Avatar>
-            <div className="">
-              <span className="truncate line-clamp-1">
-                {userData.name || "G"}
-              </span>
-              <span className="truncate line-clamp-1">{userData.email}</span>
+    <>
+      <div className="w-full pb-6">
+        {<ModalFolder type="create" userId={userData?.id as string} />}
+      </div>
+      <div className="flex w-full justify-between items-center dark:bg-zinc-900 border rounded-2xl p-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex-1 flex items-center cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition rounded-lg p-1">
+              <Avatar className={cn("w-9 h-9")}>
+                <AvatarImage src={userData.image || ""} />
+                <AvatarFallback className="bg-blue-800/40 border">
+                  {userData.name?.charAt(0) || "G"}
+                </AvatarFallback>
+              </Avatar>
             </div>
-          </div>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <Button variant="destructive" className="w-full" onClick={signOut}>
-              <LogOutIcon className="text-white" size={20} />
-              Sair
-            </Button>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <ModeToggle />
-    </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <div className="flex gap-2 items-center p-2">
+              <Avatar className={cn("w-10 h-10")}>
+                <AvatarImage src={userData.image || ""} />
+                <AvatarFallback className="bg-blue-800/40 border">
+                  {userData.name?.charAt(0) || "G"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="">
+                <span className="truncate line-clamp-1">
+                  {userData.name || "G"}
+                </span>
+                <span className="truncate line-clamp-1">{userData.email}</span>
+              </div>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Button
+                variant="destructive"
+                className="w-full"
+                onClick={signOut}
+              >
+                <LogOutIcon className="text-white" size={20} />
+                Sair
+              </Button>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <div className="w-full flex justify-end">
+          <ModeToggle />
+        </div>
+      </div>
+    </>
   );
 }
 export default Header;

@@ -1,4 +1,4 @@
-import { DollarSign, Home } from "lucide-react";
+import { DollarSign, FolderOpen, Home } from "lucide-react";
 
 export const linksNavegation = [
   {
@@ -16,4 +16,9 @@ export const linksNavegation = [
   //   href: "/upload-extract",
   //   icon: Upload,
   // },
+  {
+    label: "Pastas Recorrentes",
+    href: "/recurring-folders",
+    icon: FolderOpen,
+  },
 ];

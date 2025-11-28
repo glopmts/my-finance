@@ -107,7 +107,7 @@ const TransactionPage = () => {
   return (
     <div className="w-full flex min-h-screen h-full">
       <Header />
-      <div className="w-auto flex-1 h-full mt-4">
+      <div className="w-auto flex-1 h-full mt-4 p-4 md:p-0 mb-8 md:mr-4">
         <div className="pb-6">
           <h1 className="text-2xl font-semibold">Gerencia transações</h1>
           <span className="text-sm text-zinc-300">

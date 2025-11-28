@@ -100,6 +100,7 @@ export const transactionRouter = router({
           recurringId,
           category,
           paymentSource,
+          folderId,
         } = input;
 
         if (!userId || !amount || !date) {
@@ -191,13 +192,37 @@ export const transactionRouter = router({
             date: new Date(date),
             isRecurring,
             description,
-            recurringId,
             category,
             paymentSource,
             creditCardId:
               paymentSource === PaymentSource.CREDIT_CARD ? creditCardId : null,
           },
         });
+
+        if (transaction.isRecurring && transaction.id) {
+          const validedFolder = await db.recurringFolder.findFirst({
+            where: { id: folderId, userId },
+          });
+
+          if (validedFolder?.userId !== userId) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Acesso negado à pasta recorrente",
+            });
+          }
+
+          await db.recurringFolder.update({
+            where: { id: folderId, userId },
+            data: {
+              transactions: {
+                connect: { id: transaction.id },
+              },
+            },
+            include: {
+              transactions: true,
+            },
+          });
+        }
 
         return {
           status: 201,

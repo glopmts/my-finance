@@ -28,26 +28,35 @@ export const foldersRouter = router({
     )
     .query(async ({ input }) => {
       try {
-        if (!input.category || !input.category.length) {
+        if (!input.userId) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Categoria é obrigatória",
+            message: "Parâmetros inválidos para buscar pastas recorrentes",
           });
         }
 
         const folders = await db.recurringFolder.findMany({
           where: {
             userId: input.userId,
+            isActive: true,
+          },
+          include: {
             transactions: {
-              some: {
-                category: input.category || CategoryEnum.OTHER,
+              select: {
+                id: true,
+                amount: true,
+                description: true,
+                date: true,
+                isRecurring: true,
+                category: true,
+                paymentSource: true,
+                createdAt: true,
+                updatedAt: true,
               },
             },
           },
-          include: {
-            transactions: true,
-          },
         });
+
         return folders;
       } catch (error) {
         throw new TRPCError({

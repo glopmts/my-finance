@@ -12,4 +12,5 @@ export const createTransactionSchema = z.object({
   category: z.nativeEnum(CategoryEnum).optional(),
   paymentSource: z.nativeEnum(PaymentSource).default(PaymentSource.CREDIT_CARD),
   creditCardId: z.string().optional(),
+  folderId: z.string().min(1).optional(),
 });

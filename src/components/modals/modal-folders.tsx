@@ -24,10 +24,11 @@ import { Switch } from "@/components/ui/switch";
 import { useFolders } from "@/hooks/use-folders";
 import { RecurringFolderProps } from "@/types/interfaces";
 import { CategoryEnum, Frequency } from "@prisma/client";
+import { FolderPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CATEGORY_TRANSLATIONS } from "../../types/transaction-modal-types";
-import { Spinner } from "../ui/spinner";
+import { ButtonFallback } from "../button-fallback";
 
 type ModalFolderProps = {
   type: "create" | "edit";
@@ -136,10 +137,18 @@ const ModalFolder = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          variant={type === "create" ? "cyan" : "outline"}
+          variant="outline"
           onClick={() => setOpen(true)}
+          className="w-full rounded-full"
         >
-          {type === "create" ? "+ Adicionar Pasta" : "Editar Pasta"}
+          {type === "create" ? (
+            <span className="flex items-center">
+              <FolderPlus size={16} className="mr-2" />
+              Adicionar Pasta
+            </span>
+          ) : (
+            "Editar Pasta"
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
@@ -224,6 +233,28 @@ const ModalFolder = ({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="category">Cor da pasta *</Label>
+            <div className="w-12 h-12 overflow-hidden rounded-full">
+              <Input
+                type="color"
+                id="color"
+                value={formData.color}
+                className="rounded-full w-full h-full p-0 border-0"
+                onChange={(e) => handleInputChange("color", e.target.value)}
+                placeholder="Selecione uma cor"
+              />
+            </div>
+            <Input
+              type="text"
+              id="color-text"
+              value={formData.color}
+              className="w-full"
+              onChange={(e) => handleInputChange("color", e.target.value)}
+              placeholder="Selecione uma cor"
+            />
+          </div>
+
           <div className="flex items-center space-x-2">
             <Switch
               id="isActive"
@@ -243,18 +274,20 @@ const ModalFolder = ({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isCreating || isUpdating}>
-              {isCreating || isUpdating ? (
-                <span>
-                  <Spinner />
-                  Salvando...
-                </span>
-              ) : type === "create" ? (
-                "Criar Pasta"
-              ) : (
-                "Atualizar Pasta"
-              )}
-            </Button>
+
+            <ButtonFallback
+              size="medium"
+              variant="default"
+              disabled={isCreating || isUpdating}
+              text={
+                isCreating || isUpdating
+                  ? "Salvando..."
+                  : type === "create"
+                  ? "Criar Pasta"
+                  : "Atualizar Pasta"
+              }
+              type="submit"
+            />
           </DialogFooter>
         </form>
       </DialogContent>
