@@ -1,8 +1,27 @@
 "use client";
 
 import AuthModal from "@/components/auth_components/auth-modal";
+import { trpc } from "@/server/trpc/context/client";
+import { useRouter } from "next/navigation";
 
 const AuthPage = () => {
+  const { data: userData, isLoading: loader } = trpc.auth.me.useQuery();
+  const userId = userData?.id;
+  const router = useRouter();
+
+  if (loader) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-16 h-16 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (userId) {
+    router.push("/");
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
       {/* Header */}

@@ -33,6 +33,15 @@ export const bankAccountRouter = router({
           take: 1,
         });
 
+        const validateBank = bank[0];
+
+        if (validateBank.userId !== input.userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Você não tem permissão para acessar esta conta bancaria!",
+          });
+        }
+
         return bank;
       } catch (error) {
         throw new TRPCError({
@@ -51,6 +60,7 @@ export const bankAccountRouter = router({
         accountNumber: z.string().optional(),
         accountType: z.nativeEnum(AccountType).default(AccountType.OTHER),
         isActive: z.boolean().optional(),
+        finalBalance: z.number().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -63,7 +73,9 @@ export const bankAccountRouter = router({
           balance,
           isActive,
           bankName,
+          finalBalance,
         } = input;
+
         if (!userId || !name || !accountNumber) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -80,6 +92,7 @@ export const bankAccountRouter = router({
             bankName,
             balance,
             isActive,
+            finalBalance,
           },
         });
 
@@ -105,6 +118,7 @@ export const bankAccountRouter = router({
         accountNumber: z.string().optional(),
         accountType: z.nativeEnum(AccountType).default(AccountType.OTHER),
         isActive: z.boolean().optional(),
+        finalBalance: z.number().optional(),
       })
     )
     .mutation(async ({ input }) => {
@@ -118,12 +132,32 @@ export const bankAccountRouter = router({
           balance,
           isActive,
           bankName,
+          finalBalance,
         } = input;
         if (!id || !userId || !name || !accountNumber) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message:
               "Necessario todos os campos para atualizar conta bancaria!",
+          });
+        }
+
+        const existingBankAccount = await db.bankAccount.findUnique({
+          where: { id },
+        });
+
+        if (!existingBankAccount) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Conta bancaria nao encontrada!",
+          });
+        }
+
+        if (existingBankAccount.userId !== userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Você não tem permissão para atualizar esta conta bancaria!",
           });
         }
 
@@ -139,6 +173,7 @@ export const bankAccountRouter = router({
             bankName,
             balance,
             isActive,
+            finalBalance,
           },
         });
 

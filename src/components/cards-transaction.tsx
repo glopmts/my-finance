@@ -136,7 +136,7 @@ const CardTransaction = ({
       }`}
       onClick={handleCardClick}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-zinc-50/20 to-transparent dark:from-zinc-800/20" />
+      <div className="absolute inset-0 bg-linear-to-br from-zinc-50/20 to-transparent dark:from-zinc-800/20" />
 
       <div className="relative p-4 w-full">
         <div className="absolute -top-5 p-2 px-6 right-0 w-full">

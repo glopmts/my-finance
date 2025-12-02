@@ -178,7 +178,7 @@ export const transactionRouter = router({
             id: uniqbank,
           },
           data: {
-            balance: {
+            finalBalance: {
               decrement: amount,
             },
           },
@@ -250,6 +250,7 @@ export const transactionRouter = router({
         isRecurring: z.boolean(),
         recurringId: z.string().optional(),
         category: z.nativeEnum(CategoryEnum).optional(),
+        folderId: z.string().optional(),
         paymentSource: z
           .nativeEnum(PaymentSource)
           .default(PaymentSource.CREDIT_CARD),
@@ -268,6 +269,7 @@ export const transactionRouter = router({
           recurringId,
           category,
           paymentSource,
+          folderId,
         } = input;
 
         if (!userId || !amount || !date || !id) {
@@ -345,7 +347,7 @@ export const transactionRouter = router({
             id: uniqbank,
           },
           data: {
-            balance: {
+            finalBalance: {
               decrement: amount,
             },
           },
@@ -367,6 +369,31 @@ export const transactionRouter = router({
             paymentSource,
           },
         });
+
+        if (transactions.isRecurring && transactions.id) {
+          const validedFolder = await db.recurringFolder.findFirst({
+            where: { id: folderId, userId },
+          });
+
+          if (validedFolder?.userId !== userId) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Acesso negado à pasta recorrente",
+            });
+          }
+
+          await db.recurringFolder.update({
+            where: { id: folderId, userId },
+            data: {
+              transactions: {
+                connect: { id: transactions.id },
+              },
+            },
+            include: {
+              transactions: true,
+            },
+          });
+        }
 
         return {
           status: 200,

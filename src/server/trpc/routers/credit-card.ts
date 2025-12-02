@@ -73,7 +73,7 @@ export const cardCreditRouter = router({
       } catch (error) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Erro ao criar cartão",
+          message: "Erro ao criar cartão" + error,
         });
       }
     }),
@@ -92,6 +92,13 @@ export const cardCreditRouter = router({
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Cartão não encontrado",
+          });
+        }
+
+        if (existingCard.userId !== input.userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Você não tem permissão para atualizar este cartão",
           });
         }
 
@@ -119,6 +126,13 @@ export const cardCreditRouter = router({
     .input(deleteCreditCardSchema)
     .mutation(async ({ ctx, input }) => {
       try {
+        if (!input.userId || !input.id) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Necessario ID user para deletar cartão!",
+          });
+        }
+
         const existingCard = await db.creditCard.findUnique({
           where: { id: input.id },
         });
@@ -127,6 +141,13 @@ export const cardCreditRouter = router({
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Cartão não encontrado",
+          });
+        }
+
+        if (existingCard.userId !== input.userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Você não tem permissão para deletar este cartão",
           });
         }
 
@@ -146,6 +167,66 @@ export const cardCreditRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Erro ao desativar cartão",
+        });
+      }
+    }),
+
+  resetCreditCard: publicProcedure
+    .input(
+      object({
+        creditId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        if (!input.userId || !input.creditId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Necessario ID user para redefinir limites dos cartões!",
+          });
+        }
+
+        const validateCredits = await db.creditCard.findUnique({
+          where: { id: input.creditId, isActive: true },
+          select: {
+            id: true,
+            userId: true,
+          },
+        });
+
+        if (!validateCredits) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "Nenhum cartão de crédito ativo encontrado para este usuário",
+          });
+        }
+
+        if (validateCredits.userId !== input.userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message:
+              "Você não tem permissão para redefinir os limites destes cartões",
+          });
+        }
+
+        await db.creditCard.update({
+          where: {
+            id: input.creditId,
+            isActive: true,
+          },
+          data: { availableLimit: 0 },
+        });
+
+        return {
+          success: true,
+          message: "Limites de todos os cartões redefinidos com sucesso",
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Erro ao redefinir limites dos cartões" + error,
         });
       }
     }),

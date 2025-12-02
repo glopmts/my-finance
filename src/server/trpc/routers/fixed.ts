@@ -154,12 +154,13 @@ export const fixedRouter = router({
   deleteFixeds: publicProcedure
     .input(
       z.object({
+        userId: z.string(),
         fixedId: z.string(),
       })
     )
     .mutation(async ({ input }) => {
       try {
-        if (!input.fixedId) {
+        if (!input.fixedId || !input.userId) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "Necessario id Fixado",
@@ -172,6 +173,13 @@ export const fixedRouter = router({
           },
         });
 
+        if (uniq!.userId !== input.userId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Você não tem permissão para deletar este fixado",
+          });
+        }
+
         if (!uniq) {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -182,6 +190,56 @@ export const fixedRouter = router({
         await db.fixed.delete({
           where: {
             id: input.fixedId,
+          },
+        });
+
+        return {
+          status: 200,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Ocorreu um erro ao deletar transação fixa",
+        });
+      }
+    }),
+  deleteFixedsMutiple: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        fixedIds: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        if (!input.fixedIds || input.fixedIds.length === 0 || !input.userId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Necessario ids Fixados",
+          });
+        }
+
+        const fixeds = await db.fixed.findMany({
+          where: {
+            id: { in: input.fixedIds },
+          },
+        });
+
+        for (const fixed of fixeds) {
+          if (fixed.userId !== input.userId) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Você não tem permissão para deletar este fixado",
+            });
+          }
+        }
+
+        await db.fixed.deleteMany({
+          where: {
+            id: { in: input.fixedIds },
           },
         });
 

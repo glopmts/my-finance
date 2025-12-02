@@ -215,7 +215,7 @@ const InforBankUser = () => {
 
       <div className="flex  md:justify-between w-full flex-col-reverse gap-2.5">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+          <Card className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">
                 Saldo Total
@@ -232,7 +232,7 @@ const InforBankUser = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
+          <Card className="bg-linear-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-green-900 dark:text-green-100">
                 Receitas
@@ -253,7 +253,7 @@ const InforBankUser = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800">
+          <Card className="bg-linear-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-red-900 dark:text-red-100">
                 Despesas
@@ -316,7 +316,7 @@ const InforBankUser = () => {
             style={{ transform: `translateX(-${currentIndex * 100}%)` }}
           >
             {mockSalaryData.map((salary) => (
-              <div key={salary.id} className="w-full flex-shrink-0">
+              <div key={salary.id} className="w-full shrink-0">
                 <SalaryCard
                   userId={userData?.id as string}
                   salary={salary}

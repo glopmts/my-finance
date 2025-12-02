@@ -48,6 +48,8 @@ export const InforBankUserHook = ({
   // Obter o mês atual no formato YYYY-MM
   const currentMonth = useMemo(() => {
     const currentDate = new Date();
+    // getMonth() retorna 0 para Janeiro, 11 para Dezembro
+    // currentDate.getMonth() + 1 retorna 12 para Dezembro
     return `${currentDate.getFullYear()}-${String(
       currentDate.getMonth() + 1
     ).padStart(2, "0")}`;
@@ -96,16 +98,34 @@ export const InforBankUserHook = ({
   const availableMonths = useMemo(() => {
     if (!mockTransaction) return [];
 
-    const months = new Set<string>();
+    const monthsWithTransactions = new Set<string>();
     mockTransaction.forEach((transaction) => {
       const date = new Date(transaction.date);
       const monthKey = `${date.getFullYear()}-${String(
         date.getMonth() + 1
       ).padStart(2, "0")}`;
-      months.add(monthKey);
+      monthsWithTransactions.add(monthKey);
     });
 
-    return Array.from(months).sort().reverse();
+    let targetYear = new Date().getFullYear();
+    if (mockTransaction.length > 0) {
+      const firstTransactionDate = new Date(mockTransaction[0].date);
+      targetYear = firstTransactionDate.getFullYear();
+    }
+
+    const allMonths: string[] = [];
+    for (let month = 1; month <= 12; month++) {
+      const monthKey = `${targetYear}-${String(month).padStart(2, "0")}`;
+      allMonths.push(monthKey);
+    }
+
+    return allMonths.sort((a, b) => {
+      const [yearA, monthA] = a.split("-").map(Number);
+      const [yearB, monthB] = b.split("-").map(Number);
+
+      if (yearA !== yearB) return yearB - yearA;
+      return monthB - monthA;
+    });
   }, [mockTransaction]);
 
   // Efeito para definir o mês atual como padrão quando os dados carregam

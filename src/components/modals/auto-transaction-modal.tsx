@@ -45,7 +45,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { toast } from "sonner";
 import { useFolders } from "../../hooks/use-folders";
+import { categoryIcons } from "../../types/categoryTypes";
 import { ButtonFallback } from "../button-fallback";
 import { FolderCard } from "../folder-component";
 
@@ -78,6 +80,7 @@ const AutoTransactionModal = ({
     type
   );
   const [selectedFolderId, onSelectFolder] = useState<string | null>(null);
+  const [amountDisplay, setAmountDisplay] = useState("");
 
   const mutationCreater = trpc.transaction.createTransaction.useMutation();
   const mutationUpdate = trpc.transaction.updateTransactions.useMutation();
@@ -106,6 +109,19 @@ const AutoTransactionModal = ({
     };
     loadSavedTitles();
   }, []);
+
+  useEffect(() => {
+    if (formState.amount === 0) {
+      setAmountDisplay("");
+    } else {
+      setAmountDisplay(
+        formState.amount.toLocaleString("pt-BR", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      );
+    }
+  }, [formState.amount]);
 
   const saveTitleToMemory = (title: string) => {
     if (!title.trim()) return;
@@ -161,11 +177,13 @@ const AutoTransactionModal = ({
 
       if (type === "create") {
         await mutationCreater.mutateAsync?.(payload);
+        toast.success("Transação criada com sucesso!");
       } else {
         await mutationUpdate.mutateAsync?.({
           id: transactionData?.id as string,
           ...payload,
         });
+        toast.success("Transação atualizada com sucesso!");
       }
 
       handleOpenChange(false);
@@ -176,6 +194,9 @@ const AutoTransactionModal = ({
       saveTitleToMemory(normalizedDescription || "");
     } catch (error) {
       console.error("Erro ao processar transação:", error);
+      toast.error(
+        "Ocorreu um erro ao processar a transação. Por favor, tente novamente."
+      );
     } finally {
       setLoading(false);
     }
@@ -273,16 +294,49 @@ const AutoTransactionModal = ({
               id="amount"
               type="text"
               inputMode="decimal"
-              pattern="[0-9]*[.,]?[0-9]*"
-              value={
-                formState.amount !== undefined
-                  ? String(formState.amount).replace(".", ",")
-                  : ""
-              }
+              value={amountDisplay}
               onChange={(e) => {
-                const value = e.target.value.replace(",", ".");
-                const parsed = Number.parseFloat(value);
-                setField("amount", isNaN(parsed) ? 0 : parsed);
+                let value = e.target.value;
+                value = value.replace(/[^\d,]/g, "");
+                const parts = value.split(",");
+                if (parts.length > 2) {
+                  value = parts[0] + "," + parts.slice(1).join("");
+                }
+                if (value.startsWith(",")) {
+                  value = "0" + value;
+                }
+
+                setAmountDisplay(value);
+                const numericString = value.replace(",", ".");
+                const numberValue = parseFloat(numericString);
+                if (value === "" || value === "0,") {
+                  setField("amount", 0);
+                } else if (!isNaN(numberValue)) {
+                  const decimalPlaces = value.includes(",")
+                    ? value.split(",")[1]?.length || 0
+                    : 0;
+                  const fixedValue =
+                    decimalPlaces > 0 ? numberValue : numberValue;
+                  setField("amount", fixedValue);
+                }
+              }}
+              onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                if (amountDisplay && amountDisplay !== "0,") {
+                  const numericValue = parseFloat(
+                    amountDisplay.replace(",", ".")
+                  );
+                  if (!isNaN(numericValue)) {
+                    const formatted = numericValue.toLocaleString("pt-BR", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    });
+                    setAmountDisplay(formatted);
+                    setField("amount", numericValue);
+                  }
+                } else {
+                  setAmountDisplay("");
+                  setField("amount", 0);
+                }
               }}
               placeholder="0,00"
               required
@@ -329,7 +383,7 @@ const AutoTransactionModal = ({
                 <SelectContent>
                   {Object.entries(CATEGORY_TRANSLATIONS).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
-                      {label}
+                      {categoryIcons[key as CategoryEnum]} {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -441,19 +495,26 @@ const AutoTransactionModal = ({
             <Label htmlFor="recurring">Transação recorrente</Label>
           </div>
 
+          {/* Mostrar seleção de pasta apenas se recorrente */}
           {formState.isRecurring && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2.5">
-                {foldersTypes?.map((folder) => (
-                  <FolderCard
-                    key={folder.id}
-                    id={folder.id}
-                    name={folder.name}
-                    color={folder.color}
-                    isSelected={selectedFolderId === folder.id}
-                    onSelect={handleFolderSelect}
-                  />
-                ))}
+            <div className="space-y-2 w-full">
+              <div className="relative">
+                <div className="w-full md:max-w-[600px] overflow-hidden">
+                  <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-2">
+                    <div className="flex items-center gap-2.5 min-w-min">
+                      {foldersTypes?.map((folder) => (
+                        <FolderCard
+                          key={folder.id}
+                          id={folder.id}
+                          name={folder.name}
+                          color={folder.color}
+                          isSelected={selectedFolderId === folder.id}
+                          onSelect={handleFolderSelect}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -469,6 +530,7 @@ const AutoTransactionModal = ({
             </Button>
             <ButtonFallback
               type="submit"
+              isFormValid={!!isFormValid}
               disabled={!isFormValid || loading}
               variant="cyan"
               text={
