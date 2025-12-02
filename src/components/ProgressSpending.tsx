@@ -3,7 +3,6 @@
 import { trpc } from "@/server/trpc/context/client";
 import {
   addMonths,
-  calculateTotalExpenses,
   filterTransactionsByMonth,
   formatMonthName,
 } from "@/utils/dateUtils";
@@ -14,6 +13,7 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { useState } from "react";
+import { useMonthlyProgress } from "../hooks/useMonthlyProgress";
 import { Button } from "./ui/button";
 import { Progress } from "./ui/progress";
 
@@ -45,6 +45,17 @@ const ProgressSpending = ({ userId, maxValue = 10000 }: PropsProgress) => {
     );
   };
 
+  const monthlyTransactions = filterTransactionsByMonth(
+    transactions || [],
+    selectedMonth
+  );
+
+  const { totalExpenses, progressValue, isOverLimit, remainingBudget } =
+    useMonthlyProgress({
+      monthlyTransactions,
+      maxValue,
+    });
+
   if (isLoading) {
     return (
       <div className="w-full p-6 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
@@ -66,15 +77,6 @@ const ProgressSpending = ({ userId, maxValue = 10000 }: PropsProgress) => {
       </div>
     );
   }
-
-  const monthlyTransactions = filterTransactionsByMonth(
-    transactions,
-    selectedMonth
-  );
-  const totalExpenses = calculateTotalExpenses(monthlyTransactions);
-  const progressValue = Math.min((totalExpenses / maxValue) * 100, 100);
-  const isOverLimit = totalExpenses > maxValue;
-  const remainingBudget = maxValue - totalExpenses;
 
   return (
     <div className="w-full bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">

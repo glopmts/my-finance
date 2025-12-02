@@ -35,6 +35,7 @@ export const updateCreditCardSchema = object({
     .max(31, "Dia de vencimento deve ser entre 1 e 31")
     .optional(),
   isActive: boolean().optional(),
+  userId: string(),
 });
 
 export const deleteCreditCardSchema = object({

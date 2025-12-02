@@ -79,6 +79,7 @@ model BankAccount {
   name          String
   bankName      String
   accountNumber String?
+  finalBalance  Float    @default(0)
   balance       Float       @default(0)
   accountType   AccountType @default(CHECKING)
   isActive      Boolean     @default(true)
@@ -182,6 +183,7 @@ model MonthlyBalance {
   month         Int
   year          Int
   balance       Float    @default(0)
+  finalBalance  Float    @default(0)
   totalIncome   Float    @default(0)
   totalExpenses Float    @default(0)
   isClosed      Boolean  @default(false)

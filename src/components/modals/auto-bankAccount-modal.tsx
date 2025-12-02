@@ -36,6 +36,7 @@ type BankTypes = {
   isActive: boolean;
   balance: number;
   bankName: string;
+  finalBalance: number;
   accountNumber: string | null;
   accountType: $Enums.AccountType;
 };
@@ -63,6 +64,7 @@ const AutoBankAccountModal = ({
 
   const [name, setName] = useState(bankData?.name || "");
   const [balance, setBalance] = useState(bankData?.balance || 0);
+  const [finalBalance, setFinalBalance] = useState(bankData?.finalBalance || 0);
   const [bankName, setBankName] = useState(bankData?.bankName || "");
   const [accountNumber, setAccountNumber] = useState(
     bankData?.accountNumber || ""
@@ -95,6 +97,7 @@ const AutoBankAccountModal = ({
         accountNumber: accountNumber || undefined,
         accountType,
         isActive,
+        finalBalance,
         userId,
       };
 
@@ -184,22 +187,37 @@ const AutoBankAccountModal = ({
           </div>
 
           {/* Balance Field */}
-          <div className="space-y-2">
-            <Label htmlFor="balance">Saldo Inicial</Label>
-            <Input
-              id="balance"
-              type="number"
-              step="0.01"
-              value={balance || ""}
-              onChange={(e) =>
-                setBalance(Number.parseFloat(e.target.value) || 0)
-              }
-              placeholder="0.00"
-            />
+          <div className="flex w-full flex-wrap md:flex-nowrap space-x-4">
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="balance">Saldo Inicial</Label>
+              <Input
+                id="balance"
+                type="number"
+                step="0.01"
+                value={balance || ""}
+                onChange={(e) =>
+                  setBalance(Number.parseFloat(e.target.value) || 0)
+                }
+                placeholder="0.00"
+              />
+            </div>
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="finalBalance">Saldo Final</Label>
+              <Input
+                id="finalBalance"
+                type="number"
+                step="0.01"
+                value={finalBalance || ""}
+                onChange={(e) =>
+                  setFinalBalance(Number.parseFloat(e.target.value) || 0)
+                }
+                placeholder="0.00"
+              />
+            </div>
           </div>
 
           {/* Account Type Field */}
-          <div className="space-y-2">
+          <div className="space-y-2 w-full flex flex-col">
             <Label htmlFor="accountType">Tipo de Conta *</Label>
             <Select
               value={accountType}

@@ -1,29 +1,55 @@
 "use client";
 
+import { formatCurrency } from "@/lib/formatS";
+import { trpc } from "@/server/trpc/context/client";
 import { Calendar, CreditCard, DollarSign, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import { trpc } from "../../server/trpc/context/client";
+import { toast } from "sonner";
 import { DataAlert } from "../infor/DateAlert";
 import LoaderTypes from "../infor/LoaderTypes";
 import CreditCardModal from "../modals/auto-credit-card-modal";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Card } from "../ui/card";
+import { Spinner } from "../ui/spinner";
 
 const CreditCardPage = () => {
-  const {
-    data: user,
-    isLoading: loaderUser,
-    error: errorUser,
-  } = trpc.auth.me.useQuery();
+  const { data: user, isLoading: loaderUser } = trpc.auth.me.useQuery();
   const {
     data: creditCards,
     isLoading,
     error,
+    refetch,
   } = trpc.creditCard.getUserCreditCards.useQuery({
     userId: user?.id as string,
   });
 
   const [showBalance, setShowBalance] = useState(false);
+
+  const mutationReset = trpc.creditCard.resetCreditCard.useMutation();
+
+  const handleResetLimits = (creditId: string) => {
+    if (!creditId) return;
+    const confirmReset = window.confirm(
+      "Tem certeza que deseja resetar os limites deste cartão?"
+    );
+    if (!confirmReset) return;
+    mutationReset.mutate(
+      {
+        userId: user?.id as string,
+        creditId: creditId,
+      },
+      {
+        onSuccess: () => {
+          refetch();
+          toast.success("Limites do cartão resetados com sucesso!");
+        },
+        onError: (error) => {
+          toast.error(`Erro ao resetar limites do cartão: ${error.message}`);
+        },
+      }
+    );
+  };
 
   if (isLoading || loaderUser) {
     return (
@@ -44,13 +70,6 @@ const CreditCardPage = () => {
       </div>
     );
   }
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
-  };
 
   const getCardGradient = (cardName: string) => {
     const gradients = {
@@ -78,6 +97,9 @@ const CreditCardPage = () => {
             {creditCards.length} cartão{creditCards.length > 1 ? "s" : ""}{" "}
             cadastrado{creditCards.length > 1 ? "s" : ""}
           </p>
+          <div className="flex items-center justify-center">
+            {error?.message && <DataAlert message={error.message} />}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -110,7 +132,7 @@ const CreditCardPage = () => {
               <div
                 className={`p-6 text-white ${getCardGradient(
                   card.name
-                )} bg-gradient-to-r rounded-t-lg`}
+                )} bg-linear-to-r rounded-t-lg`}
               >
                 <div className="flex justify-between items-start mb-6">
                   <div>
@@ -238,10 +260,29 @@ const CreditCardPage = () => {
 
                 {/* Data de Criação */}
                 <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                  <p className="text-xs text-zinc-500">
-                    Criado em{" "}
-                    {new Date(card.createdAt).toLocaleDateString("pt-BR")}
-                  </p>
+                  <div className="flex justify-between w-full items-center">
+                    <p className="text-xs text-zinc-500">
+                      Criado em{" "}
+                      {new Date(card.createdAt).toLocaleDateString("pt-BR")}
+                    </p>
+                    <div className="">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-3xl"
+                        onClick={() => handleResetLimits(card.id)}
+                        disabled={mutationReset.isPending}
+                      >
+                        {mutationReset.isPending ? (
+                          <span className="flex items-center gap-2">
+                            <Spinner /> Resetando
+                          </span>
+                        ) : (
+                          "Resetar Limites"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

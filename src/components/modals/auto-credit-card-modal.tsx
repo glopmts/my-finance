@@ -171,6 +171,7 @@ const CreditCardModal = ({ type, card, userId, onSuccess }: PropsCard) => {
         await updateMutation.mutateAsync({
           ...formData,
           id: card!.id,
+          userId,
         });
         toast.success("Cartão atualizado com sucesso!");
       }

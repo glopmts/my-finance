@@ -2,7 +2,6 @@
 
 import { trpc } from "@/server/trpc/context/client";
 import type { TransactionProps } from "@/types/interfaces";
-import { endOfMonth, isWithinInterval, parseISO, startOfMonth } from "date-fns";
 import { Loader } from "lucide-react";
 import { useState } from "react";
 import { SalaryCard } from "../cards-salary";
@@ -53,19 +52,6 @@ const CardsStatistics = ({ userId }: PropsUser) => {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setTransactionToEdit(null);
-  };
-
-  const filterTransactionsByMonth = (
-    transactions: TransactionProps[],
-    date: Date
-  ) => {
-    const start = startOfMonth(date);
-    const end = endOfMonth(date);
-
-    return transactions.filter((transaction) => {
-      const transactionDate = parseISO(transaction.date);
-      return isWithinInterval(transactionDate, { start, end });
-    });
   };
 
   if (isLoading || loader) {
