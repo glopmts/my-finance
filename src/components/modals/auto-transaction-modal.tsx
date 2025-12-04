@@ -162,9 +162,16 @@ const AutoTransactionModal = ({
         ? formState.description.toUpperCase()
         : undefined;
 
+      const amountValue = parseFloat(
+        amountDisplay.replace(/\./g, "").replace(",", ".")
+      );
+
+      // Ou use formState.amount se já estiver como número
+      // const amountValue = formState.amount;
+
       const payload = {
         userId,
-        amount: formState.amount,
+        amount: amountValue,
         date: formState.date,
         description: normalizedDescription,
         type: formState.transactionType,
@@ -195,7 +202,8 @@ const AutoTransactionModal = ({
     } catch (error) {
       console.error("Erro ao processar transação:", error);
       toast.error(
-        "Ocorreu um erro ao processar a transação. Por favor, tente novamente."
+        "Ocorreu um erro ao processar a transação. Por favor, tente novamente." +
+          error
       );
     } finally {
       setLoading(false);
@@ -292,52 +300,10 @@ const AutoTransactionModal = ({
             <Label htmlFor="amount">Valor *</Label>
             <Input
               id="amount"
-              type="text"
+              type="number"
               inputMode="decimal"
               value={amountDisplay}
-              onChange={(e) => {
-                let value = e.target.value;
-                value = value.replace(/[^\d,]/g, "");
-                const parts = value.split(",");
-                if (parts.length > 2) {
-                  value = parts[0] + "," + parts.slice(1).join("");
-                }
-                if (value.startsWith(",")) {
-                  value = "0" + value;
-                }
-
-                setAmountDisplay(value);
-                const numericString = value.replace(",", ".");
-                const numberValue = parseFloat(numericString);
-                if (value === "" || value === "0,") {
-                  setField("amount", 0);
-                } else if (!isNaN(numberValue)) {
-                  const decimalPlaces = value.includes(",")
-                    ? value.split(",")[1]?.length || 0
-                    : 0;
-                  const fixedValue =
-                    decimalPlaces > 0 ? numberValue : numberValue;
-                  setField("amount", fixedValue);
-                }
-              }}
-              onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
-                if (amountDisplay && amountDisplay !== "0,") {
-                  const numericValue = parseFloat(
-                    amountDisplay.replace(",", ".")
-                  );
-                  if (!isNaN(numericValue)) {
-                    const formatted = numericValue.toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    });
-                    setAmountDisplay(formatted);
-                    setField("amount", numericValue);
-                  }
-                } else {
-                  setAmountDisplay("");
-                  setField("amount", 0);
-                }
-              }}
+              onChange={(e) => setField("amount", e.target.value)}
               placeholder="0,00"
               required
             />

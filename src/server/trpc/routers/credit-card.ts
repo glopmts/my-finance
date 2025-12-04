@@ -192,6 +192,7 @@ export const cardCreditRouter = router({
           select: {
             id: true,
             userId: true,
+            creditLimit: true,
           },
         });
 
@@ -216,7 +217,7 @@ export const cardCreditRouter = router({
             id: input.creditId,
             isActive: true,
           },
-          data: { availableLimit: 0 },
+          data: { availableLimit: validateCredits.creditLimit },
         });
 
         return {

@@ -60,22 +60,22 @@ export const authRouter = router({
       })
     )
     .mutation(async ({ input }) => {
-      const { clerkId, email, name } = input;
-
-      const existingUser = await db.user.findFirst({
-        where: {
-          OR: [{ clerkId }, { email }],
-        },
-      });
-
-      if (existingUser) {
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "Usuário já cadastrado",
-        });
-      }
-
       try {
+        const { clerkId, email, name } = input;
+
+        const existingUser = await db.user.findFirst({
+          where: {
+            OR: [{ clerkId }, { email }],
+          },
+        });
+
+        if (existingUser) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Usuário já cadastrado",
+          });
+        }
+
         const newUser = await db.user.create({
           data: {
             clerkId,

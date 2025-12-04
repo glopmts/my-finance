@@ -25,7 +25,6 @@ const InforBankUser = () => {
     isLoading,
     currentIndex,
     loader,
-    typeInfor,
     loaderSalary,
     mockSalaryData,
     showFilters,
@@ -49,6 +48,7 @@ const InforBankUser = () => {
     calculateTotalIncome,
     setShowFilters,
     currentMonth,
+    filteredExpenses,
   } = InforBankUserHook({
     typeInfor: "default",
   });
@@ -75,6 +75,18 @@ const InforBankUser = () => {
   const totalIncome = calculateTotalIncome(filteredTransactions);
   const progressValue = Math.min((totalExpenses / maxValue) * 100, 100);
   const isOverLimit = totalExpenses > maxValue;
+
+  const today = new Date();
+  const isSalaryReceived =
+    today.getDate() >= 2 &&
+    today.getMonth() ===
+      new Date(
+        selectedMonth === "all" ? currentMonth : selectedMonth
+      ).getMonth() &&
+    today.getFullYear() ===
+      new Date(
+        selectedMonth === "all" ? currentMonth : selectedMonth
+      ).getFullYear();
 
   return (
     <div className="w-full h-full space-y-6">
@@ -224,10 +236,16 @@ const InforBankUser = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                R$ {totalBalance.toFixed(2)}
+                R$ {totalBalance}
+              </div>
+              <div className="text-2xl font-bold text-red-500 dark:text-red-300">
+                R$ {filteredExpenses.toFixed(2)}
               </div>
               <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
                 {bankAccount?.length || 0} conta(s) ativa(s)
+              </p>
+              <p className="text-xs text-red-600 dark:text-red-400">
+                Despesas totais: R$ {totalExpenses.toFixed(2)}
               </p>
             </CardContent>
           </Card>
@@ -322,6 +340,8 @@ const InforBankUser = () => {
                   salary={salary}
                   progressValue={progressValue}
                   isOverLimit={isOverLimit}
+                  isLoading={isSalaryReceived}
+                  isSalaryReceived={isSalaryReceived}
                 />
               </div>
             ))}

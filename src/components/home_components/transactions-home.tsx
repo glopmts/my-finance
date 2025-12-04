@@ -4,7 +4,7 @@ import ErrorMessage from "../infor/ErrorMessage";
 
 import { Loader2 } from "lucide-react";
 import { useTransactionHook } from "../../hooks/transaction-hooks/transaction";
-import HtmlTransaction from "../transaction-compoents/html-transaction";
+import HtmlTransaction from "../transaction-components/html-transaction";
 
 type PropsUser = {
   userId: string;
