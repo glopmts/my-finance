@@ -143,7 +143,7 @@ const HtmlTransaction: FC<TransactionHtml> = ({
                     value={selectedDate.toISOString()}
                     onValueChange={(value) => setSelectedDate(new Date(value))}
                   >
-                    <SelectTrigger className="w-[160px] h-8 border-0 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                    <SelectTrigger className="w-40 h-8 border-0 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800">
                       <Calendar className="h-4 w-4 mr-2" />
                       <SelectValue>
                         {format(selectedDate, "MMM yyyy", { locale: ptBR })}

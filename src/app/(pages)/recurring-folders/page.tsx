@@ -1,6 +1,9 @@
 "use client";
 
+import { FolderMonthFilter } from "@/components/FolderMonthFilter";
+import Header from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,75 +12,36 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { trpc } from "@/server/trpc/context/client";
+import { useRecurringFolders } from "@/hooks/useRecurringFolders";
+import { formatCurrency } from "@/lib/formatS";
+import { formatDate } from "@/utils/formatDate";
 import {
   Calendar,
   ChevronRight,
   DollarSign,
+  Filter,
   Folder,
+  RefreshCw,
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
-import Header from "../../../components/Header";
 
 const RecurringFolders = () => {
-  const { data: userData, isLoading: loader } = trpc.auth.me.useQuery();
+  const router = useRouter();
   const {
-    data: recurringFolders,
+    userId,
+    recurringFolders,
     isLoading,
     refetch,
-  } = trpc.folders.getFoldersByAccountType.useQuery(
-    {
-      userId: userData?.id || "",
-    },
-    {
-      enabled: !!userData?.id,
-    }
-  );
-
-  const userId = userData?.id;
-  const router = useRouter();
-
-  const stats = useMemo(() => {
-    if (!recurringFolders)
-      return {
-        totalFolders: 0,
-        activeCount: 0,
-        totalTransactions: 0,
-        totalAmount: 0,
-      };
-
-    const totalFolders = recurringFolders.length;
-    const activeCount = recurringFolders.filter((f) => f.isActive).length;
-    const totalTransactions = recurringFolders.reduce(
-      (sum, folder) => sum + folder.transactions.length,
-      0
-    );
-    const totalAmount = recurringFolders.reduce(
-      (sum, folder) =>
-        sum + folder.transactions.reduce((tSum, t) => tSum + t.amount, 0),
-      0
-    );
-
-    return { totalFolders, activeCount, totalTransactions, totalAmount };
-  }, [recurringFolders]);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Intl.DateTimeFormat("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(new Date(dateString));
-  };
+    stats,
+    selectedMonth,
+    setSelectedMonth,
+    availableMonths,
+    currentMonth,
+    formatMonth,
+    totalFolders,
+  } = useRecurringFolders();
 
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
@@ -99,7 +63,7 @@ const RecurringFolders = () => {
     return labels[frequency] || frequency;
   };
 
-  if (isLoading || loader) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto p-4 md:p-6 lg:p-8 space-y-6">
@@ -127,29 +91,57 @@ const RecurringFolders = () => {
     <div className="w-full flex min-h-screen h-full p-4 md:p-0">
       <Header />
       <div className="w-auto flex-1 h-full mt-4 md:mr-4 mb-10">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Pastas Recorrentes
-          </h1>
-          <p className="text-muted-foreground">
-            Gerencie suas categorias e transações recorrentes
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+              Pastas Recorrentes
+            </h1>
+            <p className="text-muted-foreground">
+              Transações recorrentes filtradas por mês
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <FolderMonthFilter
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              availableMonths={availableMonths}
+              currentMonth={currentMonth}
+              formatMonth={formatMonth}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => refetch()}
+              className="h-9 gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
+        {/* Stats com badge do filtro ativo */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-card-foreground">
                 Total de Pastas
               </CardTitle>
-              <Folder className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-2">
+                <Folder className="h-4 w-4 text-muted-foreground" />
+                {selectedMonth !== "current" && selectedMonth !== "all" && (
+                  <Badge variant="outline" className="h-5 px-1.5">
+                    <Filter className="h-3 w-3" />
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-card-foreground">
                 {stats.totalFolders}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {stats.activeCount} ativas
+                {stats.activeCount} ativas • {totalFolders} total
               </p>
             </CardContent>
           </Card>
@@ -157,16 +149,27 @@ const RecurringFolders = () => {
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-card-foreground">
-                Transações
+                Transações ({selectedMonth === "all" ? "Total" : "Filtradas"})
               </CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                {selectedMonth !== "current" && selectedMonth !== "all" && (
+                  <Badge variant="outline" className="h-5 px-1.5 text-xs">
+                    {formatMonth(selectedMonth)}
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-card-foreground">
                 {stats.totalTransactions}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Total registradas
+                {selectedMonth === "current"
+                  ? "Este mês"
+                  : selectedMonth === "all"
+                  ? "Todos os meses"
+                  : formatMonth(selectedMonth)}
               </p>
             </CardContent>
           </Card>
@@ -174,7 +177,7 @@ const RecurringFolders = () => {
           <Card className="bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-card-foreground">
-                Valor Total
+                Valor ({selectedMonth === "all" ? "Total" : "Filtrado"})
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -183,7 +186,11 @@ const RecurringFolders = () => {
                 {formatCurrency(stats.totalAmount)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Todas as transações
+                {selectedMonth === "current"
+                  ? "Este mês"
+                  : selectedMonth === "all"
+                  ? "Acumulado"
+                  : formatMonth(selectedMonth)}
               </p>
             </CardContent>
           </Card>
@@ -200,25 +207,51 @@ const RecurringFolders = () => {
                 {stats.activeCount > 0 ? "Ativo" : "Inativo"}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Sistema operacional
+                {selectedMonth === "current"
+                  ? "Mês atual"
+                  : "Período selecionado"}
               </p>
             </CardContent>
           </Card>
         </div>
 
+        {/* Indicador de filtro ativo */}
+        {selectedMonth !== "current" && (
+          <div className="mb-6 p-3 bg-muted/50 rounded-lg border">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Mostrando transações do período:{" "}
+                <span className="font-medium text-foreground">
+                  {formatMonth(selectedMonth)}
+                </span>
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedMonth("current")}
+                className="ml-auto h-7 px-2"
+              >
+                Limpar filtro
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Lista de pastas */}
         {recurringFolders && recurringFolders.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recurringFolders.map((folder) => {
-              const totalAmount = folder.transactions.reduce(
-                (sum, t) => sum + t.amount,
-                0
-              );
-              const isPositive = totalAmount >= 0;
+              const isPositive = folder.filteredAmount >= 0;
+              const hasFilteredTransactions =
+                folder.filteredTransactions.length > 0;
 
               return (
                 <Card
                   key={folder.id}
-                  className="bg-card border-border hover:border-primary/50 transition-all duration-200 cursor-pointer group"
+                  className={`bg-card border-border hover:border-primary/50 transition-all duration-200 cursor-pointer group ${
+                    !hasFilteredTransactions ? "opacity-60" : ""
+                  }`}
                   style={
                     folder.color
                       ? {
@@ -240,6 +273,12 @@ const RecurringFolders = () => {
                           </CardTitle>
                           <CardDescription className="text-xs mt-1">
                             {getFrequencyLabel(folder.frequency)}
+                            {!hasFilteredTransactions &&
+                              selectedMonth !== "all" && (
+                                <span className="ml-2 text-amber-600">
+                                  • Sem transações neste período
+                                </span>
+                              )}
                           </CardDescription>
                         </div>
                       </div>
@@ -262,6 +301,12 @@ const RecurringFolders = () => {
                       >
                         {folder.isActive ? "Ativo" : "Inativo"}
                       </Badge>
+                      {selectedMonth !== "current" &&
+                        selectedMonth !== "all" && (
+                          <Badge variant="outline" className="text-xs">
+                            {folder.filteredTransactions.length} transações
+                          </Badge>
+                        )}
                     </div>
 
                     {/* Description */}
@@ -280,26 +325,50 @@ const RecurringFolders = () => {
                           <TrendingDown className="h-4 w-4 text-red-500" />
                         )}
                         <span className="text-xs text-muted-foreground">
-                          {folder.transactions.length} transações
+                          {folder.filteredTransactions.length} transações
+                          {selectedMonth !== "all" && (
+                            <span className="ml-1">
+                              ({folder.transactions.length} total)
+                            </span>
+                          )}
                         </span>
                       </div>
-                      <span
-                        className={`text-lg font-bold ${
-                          isPositive ? "text-green-500" : "text-red-500"
-                        }`}
-                      >
-                        {formatCurrency(totalAmount)}
-                      </span>
+                      <div className="text-right">
+                        <span
+                          className={`text-lg font-bold ${
+                            isPositive ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
+                          {formatCurrency(folder.filteredAmount)}
+                        </span>
+                        {selectedMonth !== "all" &&
+                          folder.filteredAmount !==
+                            folder.transactions.reduce(
+                              (sum, t) => sum + t.amount,
+                              0
+                            ) && (
+                            <p className="text-xs text-muted-foreground">
+                              Total:{" "}
+                              {formatCurrency(
+                                folder.transactions.reduce(
+                                  (sum, t) => sum + t.amount,
+                                  0
+                                )
+                              )}
+                            </p>
+                          )}
+                      </div>
                     </div>
 
                     {/* Last transaction date */}
-                    {folder.transactions.length > 0 && (
+                    {folder.filteredTransactions.length > 0 && (
                       <div className="text-xs text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        Última:{" "}
+                        Última neste período:{" "}
                         {formatDate(
-                          folder.transactions[folder.transactions.length - 1]
-                            .date
+                          folder.filteredTransactions[
+                            folder.filteredTransactions.length - 1
+                          ].date
                         )}
                       </div>
                     )}
@@ -313,12 +382,26 @@ const RecurringFolders = () => {
             <CardContent className="flex flex-col items-center justify-center py-16">
               <Folder className="h-16 w-16 text-muted-foreground mb-4" />
               <h3 className="text-xl font-semibold text-card-foreground mb-2">
-                Nenhuma pasta encontrada
+                {selectedMonth !== "current" && selectedMonth !== "all"
+                  ? "Nenhuma transação neste período"
+                  : "Nenhuma pasta encontrada"}
               </h3>
-              <p className="text-muted-foreground text-center max-w-md">
-                Você ainda não criou nenhuma pasta recorrente. Comece criando
-                sua primeira pasta para organizar suas transações.
+              <p className="text-muted-foreground text-center max-w-md mb-4">
+                {selectedMonth !== "current" && selectedMonth !== "all"
+                  ? `Não há transações nas pastas para o período ${formatMonth(
+                      selectedMonth
+                    )}.`
+                  : "Você ainda não criou nenhuma pasta recorrente. Comece criando sua primeira pasta para organizar suas transações."}
               </p>
+              {selectedMonth !== "current" && selectedMonth !== "all" && (
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedMonth("all")}
+                  className="mt-2"
+                >
+                  Ver todas as transações
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}

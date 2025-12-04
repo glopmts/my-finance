@@ -138,13 +138,7 @@ const CardsStatistics = ({ userId }: PropsUser) => {
           {/* Salary Cards Section */}
           <div className="lg:col-span-2 space-y-4">
             {mockSalaryData?.map((card) => (
-              <SalaryCard
-                key={card.id}
-                userId={userId}
-                salary={card}
-                progressValue={progressValue}
-                isOverLimit={isOverLimit}
-              />
+              <SalaryCard key={card.id} userId={userId} salary={card} />
             ))}
           </div>
 

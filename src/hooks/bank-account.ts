@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { trpc } from "../server/trpc/context/client";
 import { TransactionProps } from "../types/interfaces";
 
@@ -12,13 +12,14 @@ export const InforBankUserHook = ({
   typeInfor,
 }: PropsInfor) => {
   const { data: userData, isLoading: loaderUser } = trpc.auth.me.useQuery();
+  const userId = userData?.id as string;
 
   const {
     data: bankAccount,
     isLoading,
     refetch,
   } = trpc.bankAccount.getBankAcconut.useQuery({
-    userId: userData?.id as string,
+    userId: userId,
   });
 
   const {
@@ -27,7 +28,7 @@ export const InforBankUserHook = ({
     error: errorTransaction,
     refetch: refetchTransaction,
   } = trpc.transaction.getTransactions.useQuery({
-    userId: userData?.id as string,
+    userId: userId,
   });
 
   const {
@@ -35,7 +36,7 @@ export const InforBankUserHook = ({
     isLoading: loaderSalary,
     error,
   } = trpc.salary.getSalary.useQuery({
-    userId: userData?.id as string,
+    userId: userId,
   });
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -48,8 +49,6 @@ export const InforBankUserHook = ({
   // Obter o mês atual no formato YYYY-MM
   const currentMonth = useMemo(() => {
     const currentDate = new Date();
-    // getMonth() retorna 0 para Janeiro, 11 para Dezembro
-    // currentDate.getMonth() + 1 retorna 12 para Dezembro
     return `${currentDate.getFullYear()}-${String(
       currentDate.getMonth() + 1
     ).padStart(2, "0")}`;
@@ -139,7 +138,6 @@ export const InforBankUserHook = ({
       if (monthExists) {
         setSelectedMonth(currentMonth);
       } else if (availableMonths.length > 0) {
-        // Se o mês atual não existe, usa o mês mais recente disponível
         setSelectedMonth(availableMonths[0]);
       }
     }
@@ -165,7 +163,7 @@ export const InforBankUserHook = ({
   };
 
   const clearFilters = () => {
-    setSelectedMonth(currentMonth); // Volta para o mês atual ao limpar
+    setSelectedMonth(currentMonth);
     setSelectedType("all");
     setSelectedCategory("all");
   };
@@ -176,27 +174,43 @@ export const InforBankUserHook = ({
     selectedCategory,
   ].filter((f) => f !== "all" && f !== null).length;
 
-  function calculateTotalExpenses(transactions: TransactionProps[]) {
-    if (!Array.isArray(transactions)) return 0;
+  const calculateTotalExpenses = useCallback(
+    (transactions: TransactionProps[]) => {
+      if (!Array.isArray(transactions)) return 0;
 
-    return transactions
-      .filter((t) => t.type === "EXPENSE")
-      .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
-  }
+      return transactions
+        .filter((t) => t.type === "EXPENSE")
+        .reduce((sum, transaction) => sum + Math.abs(transaction.amount), 0);
+    },
+    []
+  );
 
-  function calculateTotalIncome(transactions: TransactionProps[]) {
-    if (!Array.isArray(transactions)) return 0;
+  const calculateTotalIncome = useCallback(
+    (transactions: TransactionProps[]) => {
+      if (!Array.isArray(transactions)) return 0;
 
-    return transactions
-      .filter((t) => t.type === "INCOME")
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
-  }
+      return transactions
+        .filter((t) => t.type === "INCOME")
+        .reduce((sum, transaction) => sum + transaction.amount, 0);
+    },
+    []
+  );
 
   const totalBalance =
     bankAccount?.reduce((sum, account) => sum + account.balance, 0) || 0;
 
+  const totalExpenses = useMemo(() => {
+    return calculateTotalExpenses(mockTransaction || []);
+  }, [mockTransaction, calculateTotalExpenses]);
+
+  const filteredExpenses = useMemo(() => {
+    return calculateTotalExpenses(filteredTransactions);
+  }, [filteredTransactions, calculateTotalExpenses]);
+
   return {
     totalBalance,
+    totalExpenses,
+    filteredExpenses,
     loaderUser,
     isLoading,
     currentIndex,
@@ -223,8 +237,8 @@ export const InforBankUserHook = ({
     mockTransaction,
     clearFilters,
     calculateTotalExpenses,
-    refetch,
     calculateTotalIncome,
+    refetch,
     setShowFilters,
     refetchTransaction,
     currentMonth,

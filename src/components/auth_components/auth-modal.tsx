@@ -33,6 +33,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import GoogleButton from "./GoogleButton";
 
 type AuthModalProps = {
   children?: React.ReactNode;
@@ -288,6 +289,16 @@ const AuthModal = ({
               </Button>
             </form>
           )}
+
+          <div className="pb-3 *:mt-2 flex items-center justify-center gap-2">
+            <div className="h-px w-16 bg-muted" />
+            <span>ou</span>
+            <div className="h-px w-16 bg-muted" />
+          </div>
+
+          <div className="space-y-2">
+            <GoogleButton type={authType === "login" ? "signIn" : "signUp"} />
+          </div>
 
           {step === "auth" && (
             <div className="text-center">

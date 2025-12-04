@@ -6,6 +6,8 @@ import { formatCurrency } from "../lib/formatS";
 import { formatDate } from "../utils/formatDate";
 import { getFrequencyLabel } from "../utils/infor-cards";
 import ProgressSpending from "./ProgressSpending";
+import { Button } from "./ui/button";
+import { Spinner } from "./ui/spinner";
 
 type SalaryData = {
   userId: string;
@@ -24,13 +26,17 @@ interface SalaryCardProps {
   progressValue?: number;
   isOverLimit?: boolean;
   userId: string;
+  onclick?: () => void;
+  isLoading?: boolean;
+  isSalaryReceived?: boolean;
 }
 
 export function SalaryCard({
   salary,
-  progressValue,
-  isOverLimit,
   userId,
+  isLoading,
+  onclick,
+  isSalaryReceived,
 }: SalaryCardProps) {
   return (
     <Card className="group relative overflow-hidden border-0 bg-white dark:bg-black shadow-sm ring-1 ring-zinc-100 dark:ring-zinc-900 transition-all duration-200 hover:shadow-md hover:ring-zinc-200 dark:hover:ring-zinc-800">
@@ -88,9 +94,27 @@ export function SalaryCard({
             <CalendarDays className="h-3 w-3" />
             <span>Pagamento: {formatDate(salary.paymentDate)}</span>
           </div>
-          <div className="text-right text-xs text-zinc-400 dark:text-zinc-500">
-            <p>Atualizado</p>
-            <p className="font-mono">{formatDate(salary.updatedAt)}</p>
+          <div className="flex flex-col gap-2">
+            <div className="">
+              <div className="text-right text-xs text-zinc-400 dark:text-zinc-500">
+                <p>Atualizado</p>
+                <p className="font-mono">{formatDate(salary.updatedAt)}</p>
+              </div>
+            </div>
+            {isSalaryReceived !== undefined && (
+              <div className="mt-3">
+                <Button
+                  variant="cyan"
+                  onClick={onclick}
+                  disabled={isSalaryReceived}
+                >
+                  <span className="flex items-center gap-2">
+                    {isLoading && <Spinner />}
+                    Salario recebido?
+                  </span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
