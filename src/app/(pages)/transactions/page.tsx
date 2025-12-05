@@ -1,6 +1,6 @@
 "use client";
 
-import CardTransaction from "@/components/cards-transaction";
+import CardTransaction from "@/components/cards/cards-transaction";
 import Header from "@/components/Header";
 import AutoTransactionModal from "@/components/modals/auto-transaction-modal";
 import { Button } from "@/components/ui/button";
@@ -14,14 +14,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import { useRouter } from "next/navigation";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
+} from "@/components/ui/select";
+import { useRouter } from "next/navigation";
 
 type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER" | "ALL";
 
