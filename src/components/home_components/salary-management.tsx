@@ -4,8 +4,8 @@ import { trpc } from "@/server/trpc/context/client";
 import type { TransactionProps } from "@/types/interfaces";
 import { Loader } from "lucide-react";
 import { useState } from "react";
-import { SalaryCard } from "../cards-salary";
-import CardTransaction from "../cards-transaction";
+import { SalaryCard } from "../cards/cards-salary";
+import CardTransaction from "../cards/cards-transaction";
 import { DataAlert } from "../infor/DateAlert";
 import ErrorMessage from "../infor/ErrorMessage";
 import LoaderTypes from "../infor/LoaderTypes";
@@ -82,22 +82,6 @@ const CardsStatistics = ({ userId }: PropsUser) => {
   if (!mockTransaction) {
     return <DataAlert message="Nenhuma transferência encontrada!" />;
   }
-
-  function calculateTotalExpenses(transactions: TransactionProps[]) {
-    if (!Array.isArray(transactions)) return 0;
-
-    return transactions.reduce(
-      (sum, transaction) => sum + transaction.amount,
-      0
-    );
-  }
-
-  const maxValueFilter = mockSalaryData.map((c) => c.amount);
-  const maxValue = maxValueFilter[0];
-
-  const totalExpenses = calculateTotalExpenses(mockTransaction);
-  const progressValue = Math.min((totalExpenses / maxValue) * 100, 100);
-  const isOverLimit = totalExpenses > maxValue;
 
   return (
     <div className="w-full h-full">

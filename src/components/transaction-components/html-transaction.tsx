@@ -13,8 +13,8 @@ import { Dispatch, FC, SetStateAction } from "react";
 
 import { $Enums } from "@prisma/client";
 import { format, subMonths } from "date-fns";
+import CardTransaction from "../../components/cards/cards-transaction";
 import { TransactionProps } from "../../types/interfaces";
-import CardTransaction from "../cards-transaction";
 import CreditCardPage from "../home_components/credit-cart";
 import AutoTransactionModal from "../modals/auto-transaction-modal";
 import ProgressSpending from "../ProgressSpending";

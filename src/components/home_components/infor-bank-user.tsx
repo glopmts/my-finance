@@ -2,7 +2,7 @@
 
 import { Filter, TrendingDown, TrendingUp, Wallet, X } from "lucide-react";
 import { InforBankUserHook } from "../../hooks/bank-account";
-import { SalaryCard } from "../cards-salary";
+import { SalaryCard } from "../cards/cards-salary";
 import { DataAlert } from "../infor/DateAlert";
 import LoaderTypes from "../infor/LoaderTypes";
 import AutoBankAccountModal from "../modals/auto-bankAccount-modal";
@@ -236,7 +236,7 @@ const InforBankUser = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-                R$ {totalBalance}
+                R$ {totalBalance.toFixed(2)}
               </div>
               <div className="text-2xl font-bold text-red-500 dark:text-red-300">
                 R$ {filteredExpenses.toFixed(2)}

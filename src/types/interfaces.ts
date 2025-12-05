@@ -77,3 +77,19 @@ export interface RecurringFolderProps {
   createdAt: Date | string;
   updatedAt: Date | string;
 }
+
+export type FolderType = {
+  userId: string;
+  id: string;
+  name: string;
+  category: $Enums.CategoryEnum;
+  frequency: $Enums.Frequency;
+  color?: string | null;
+  isActive: boolean;
+  description?: string | null;
+  transactions: TransactionProps[];
+  filteredTransactions: TransactionProps[];
+  filteredAmount: number;
+  createdAt: string;
+  updatedAt: string;
+};
