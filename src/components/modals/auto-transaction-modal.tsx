@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import { useFolders } from "../../hooks/use-folders";
 import { categoryIcons } from "../../types/categoryTypes";
 import { ButtonFallback } from "../button-fallback";
+import { CurrencyInput, useCurrencyInput } from "../currency-input";
 import { FolderCard } from "../folder-component";
 
 interface SavedTitle {
@@ -74,13 +75,20 @@ const AutoTransactionModal = ({
   const { foldersTypes } = useFolders({
     userId,
   });
-  // Usando o hook customizado
+
   const { formState, setField, resetForm } = useTransactionForm(
     transactionData,
     type
   );
-  const [selectedFolderId, onSelectFolder] = useState<string | null>(null);
+
+  const [selectedFolderId, onSelectFolder] = useState<string | null>(
+    Array.isArray(transactionData?.recurringFolders)
+      ? transactionData.recurringFolders[0]?.id || ""
+      : ""
+  );
+
   const [amountDisplay, setAmountDisplay] = useState("");
+  const currency = useCurrencyInput(transactionData?.amount || 0);
 
   const mutationCreater = trpc.transaction.createTransaction.useMutation();
   const mutationUpdate = trpc.transaction.updateTransactions.useMutation();
@@ -111,17 +119,28 @@ const AutoTransactionModal = ({
   }, []);
 
   useEffect(() => {
-    if (formState.amount === 0) {
+    if (transactionData?.amount !== undefined) {
+      const formattedAmount = transactionData.amount.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      setAmountDisplay(formattedAmount);
+    } else if (formState.amount === 0) {
       setAmountDisplay("");
-    } else {
-      setAmountDisplay(
-        formState.amount.toLocaleString("pt-BR", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-      );
     }
-  }, [formState.amount]);
+  }, [transactionData, formState.amount]);
+
+  useEffect(() => {
+    if (type === "create" && formState.amount === 0) {
+      setAmountDisplay("");
+    } else if (type === "create" && formState.amount > 0) {
+      const formatted = formState.amount.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+      setAmountDisplay(formatted);
+    }
+  }, [formState.amount, type]);
 
   const saveTitleToMemory = (title: string) => {
     if (!title.trim()) return;
@@ -162,16 +181,9 @@ const AutoTransactionModal = ({
         ? formState.description.toUpperCase()
         : undefined;
 
-      const amountValue = parseFloat(
-        amountDisplay.replace(/\./g, "").replace(",", ".")
-      );
-
-      // Ou use formState.amount se já estiver como número
-      // const amountValue = formState.amount;
-
       const payload = {
         userId,
-        amount: amountValue,
+        amount: formState.amount,
         date: formState.date,
         description: normalizedDescription,
         type: formState.transactionType,
@@ -200,7 +212,6 @@ const AutoTransactionModal = ({
       refetchTypes();
       saveTitleToMemory(normalizedDescription || "");
     } catch (error) {
-      console.error("Erro ao processar transação:", error);
       toast.error(
         "Ocorreu um erro ao processar a transação. Por favor, tente novamente." +
           error
@@ -297,13 +308,14 @@ const AutoTransactionModal = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="amount">Valor *</Label>
-            <Input
+            <CurrencyInput
               id="amount"
-              type="number"
-              inputMode="decimal"
-              value={amountDisplay}
-              onChange={(e) => setField("amount", e.target.value)}
+              label="Valor *"
+              value={currency.displayValue}
+              onChange={(display, numeric) => {
+                currency.handleChange(display, numeric);
+                setField("amount", numeric);
+              }}
               placeholder="0,00"
               required
             />

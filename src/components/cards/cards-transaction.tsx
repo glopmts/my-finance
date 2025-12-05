@@ -3,15 +3,15 @@
 import { CalendarDays, HardDriveUploadIcon, Repeat } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { formatCurrency } from "../lib/formatS";
-import { trpc } from "../server/trpc/context/client";
-import type { TransactionProps } from "../types/interfaces";
-import { fnDateLong } from "../utils/dateUtils";
-import MenuDropdwonCard from "./MenuDropdwonCards";
-import AutoTransactionModal from "./modals/auto-transaction-modal";
-import { Badge } from "./ui/badge";
-import { Card } from "./ui/card";
-import { Checkbox } from "./ui/checkbox";
+import { formatCurrency } from "../../lib/formatS";
+import { trpc } from "../../server/trpc/context/client";
+import type { TransactionProps } from "../../types/interfaces";
+import { fnDateLong } from "../../utils/dateUtils";
+import MenuDropdwonCard from "./../MenuDropdwonCards";
+import AutoTransactionModal from "./../modals/auto-transaction-modal";
+import { Badge } from "./../ui/badge";
+import { Card } from "./../ui/card";
+import { Checkbox } from "./../ui/checkbox";
 
 type DataProps = {
   transaction?: TransactionProps;

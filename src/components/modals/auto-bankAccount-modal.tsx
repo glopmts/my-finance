@@ -26,6 +26,7 @@ import { $Enums } from "@prisma/client";
 import { useState } from "react";
 import { trpc } from "../../server/trpc/context/client";
 import { ButtonFallback } from "../button-fallback";
+import { CurrencyInput, useCurrencyInput } from "../currency-input";
 
 type BankTypes = {
   userId: string;
@@ -63,8 +64,6 @@ const AutoBankAccountModal = ({
   const mutationUpdate = trpc.bankAccount.updaterBank.useMutation();
 
   const [name, setName] = useState(bankData?.name || "");
-  const [balance, setBalance] = useState(bankData?.balance || 0);
-  const [finalBalance, setFinalBalance] = useState(bankData?.finalBalance || 0);
   const [bankName, setBankName] = useState(bankData?.bankName || "");
   const [accountNumber, setAccountNumber] = useState(
     bankData?.accountNumber || ""
@@ -72,12 +71,15 @@ const AutoBankAccountModal = ({
   const [accountType, setAccountType] = useState<$Enums.AccountType>(
     bankData?.accountType || "CHECKING"
   );
+
+  const balanceCurrency = useCurrencyInput(bankData?.balance || 0);
+  const finalBalanceCurrency = useCurrencyInput(bankData?.finalBalance || 0);
+
   const [isActive, setIsActive] = useState(bankData?.isActive ?? true);
 
   const resetForm = () => {
     if (type === "create") {
       setName("");
-      setBalance(0);
       setBankName("");
       setAccountNumber("");
       setAccountType("CHECKING");
@@ -92,12 +94,12 @@ const AutoBankAccountModal = ({
     try {
       const payload = {
         name,
-        balance,
+        balance: balanceCurrency.numericValue,
         bankName,
         accountNumber: accountNumber || undefined,
         accountType,
         isActive,
-        finalBalance,
+        finalBalance: finalBalanceCurrency.numericValue,
         userId,
       };
 
@@ -189,29 +191,21 @@ const AutoBankAccountModal = ({
           {/* Balance Field */}
           <div className="flex w-full flex-wrap md:flex-nowrap space-x-4">
             <div className="flex-1 space-y-2">
-              <Label htmlFor="balance">Saldo Inicial</Label>
-              <Input
+              <CurrencyInput
                 id="balance"
-                type="number"
-                step="0.01"
-                value={balance || ""}
-                onChange={(e) =>
-                  setBalance(Number.parseFloat(e.target.value) || 0)
-                }
-                placeholder="0.00"
+                label="Saldo Inicial"
+                value={balanceCurrency.displayValue}
+                onChange={balanceCurrency.handleChange}
+                placeholder="0,00"
               />
             </div>
             <div className="flex-1 space-y-2">
-              <Label htmlFor="finalBalance">Saldo Final</Label>
-              <Input
+              <CurrencyInput
                 id="finalBalance"
-                type="number"
-                step="0.01"
-                value={finalBalance || ""}
-                onChange={(e) =>
-                  setFinalBalance(Number.parseFloat(e.target.value) || 0)
-                }
-                placeholder="0.00"
+                label="Saldo Final"
+                value={finalBalanceCurrency.displayValue}
+                onChange={finalBalanceCurrency.handleChange}
+                placeholder="0,00"
               />
             </div>
           </div>

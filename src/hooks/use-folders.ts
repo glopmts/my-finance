@@ -17,7 +17,7 @@ export function useFolders({ userId, category }: UseFoldersProps) {
     isLoading: isLoadingFolders,
     error: errorFolders,
     refetch: refetchFolders,
-  } = trpc.folders.getFoldersByAccountType.useQuery({
+  } = trpc.folders.getFoldersByActive.useQuery({
     userId,
     category: category || undefined,
   });

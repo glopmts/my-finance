@@ -2,6 +2,7 @@
 
 import { trpc } from "@/server/trpc/context/client";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 export const useRecurringFolders = () => {
   const { data: userData, isLoading: loader } = trpc.auth.me.useQuery();
@@ -21,6 +22,9 @@ export const useRecurringFolders = () => {
   );
 
   const [selectedMonth, setSelectedMonth] = useState<string>("current");
+
+  const mutationFolderDelete = trpc.folders.deleteFolder.useMutation();
+  const mutationFolderIsActive = trpc.folders.updateStatusFolder.useMutation();
 
   // Obter o mês atual no formato YYYY-MM
   const currentMonth = useMemo(() => {
@@ -120,17 +124,63 @@ export const useRecurringFolders = () => {
     return date.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
   };
 
+  const handleDeleteFolder = async (folderId: string) => {
+    if (!folderId) {
+      alert("Necessario ID da pasta!");
+      return null;
+    }
+
+    const confir = confirm("Deseja deletar esta pasta?");
+
+    if (!confir) {
+      return null;
+    }
+
+    try {
+      mutationFolderDelete.mutateAsync({
+        folderId,
+        userId,
+      });
+      toast.success("Pasta deletada com successo!");
+      await refetch();
+    } catch (error) {
+      toast.error("Error ao deletar pasta recorrente!" + error);
+    }
+  };
+
+  const handleIsActiveFolder = async (folderId: string) => {
+    if (!folderId) {
+      alert("Necessario ID da pasta!");
+      return null;
+    }
+
+    try {
+      mutationFolderIsActive.mutateAsync({
+        folderId,
+        userId,
+      });
+      toast.success("Status pasta atualizada com sucesso!");
+      await refetch();
+    } catch (error) {
+      toast.error("Error ao atualizar status pasta recorrente!" + error);
+    }
+  };
+
   return {
     userId,
     recurringFolders: filteredFolders,
     isLoading: isLoading || loader,
-    refetch,
+    totalFolders: recurringFolders?.length || 0,
     stats,
     selectedMonth,
-    setSelectedMonth,
     availableMonths,
     currentMonth,
+    isPendentDelete: mutationFolderDelete.isPending,
+    isPendentisActive: mutationFolderIsActive.isPending,
+    refetch,
+    setSelectedMonth,
     formatMonth,
-    totalFolders: recurringFolders?.length || 0,
+    handleDeleteFolder,
+    handleIsActiveFolder,
   };
 };

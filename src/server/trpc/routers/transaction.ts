@@ -41,6 +41,9 @@ export const transactionRouter = router({
           orderBy: {
             createdAt: "desc",
           },
+          include: {
+            recurringFolders: true,
+          },
         });
 
         return transactions;
@@ -97,7 +100,6 @@ export const transactionRouter = router({
           isRecurring,
           type,
           description,
-          recurringId,
           category,
           paymentSource,
           folderId,

@@ -1,31 +1,26 @@
 "use client";
 
+import FolderCard from "@/components/cards/folder-cards";
 import { FolderMonthFilter } from "@/components/FolderMonthFilter";
 import Header from "@/components/Header";
+import DetailsModalFolder from "@/components/modals/details-folder-select-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRecurringFolders } from "@/hooks/useRecurringFolders";
 import { formatCurrency } from "@/lib/formatS";
-import { formatDate } from "@/utils/formatDate";
+import { FolderType } from "@/types/interfaces";
 import {
   Calendar,
-  ChevronRight,
   DollarSign,
   Filter,
   Folder,
   RefreshCw,
-  TrendingDown,
   TrendingUp,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const RecurringFolders = () => {
   const router = useRouter();
@@ -33,35 +28,37 @@ const RecurringFolders = () => {
     userId,
     recurringFolders,
     isLoading,
+    isPendentisActive,
     refetch,
     stats,
     selectedMonth,
-    setSelectedMonth,
+    totalFolders,
+    isPendentDelete,
     availableMonths,
     currentMonth,
     formatMonth,
-    totalFolders,
+    setSelectedMonth,
+    handleDeleteFolder,
+    handleIsActiveFolder,
   } = useRecurringFolders();
 
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      INCOME: "bg-green-500/10 text-green-500 border-green-500/20",
-      EXPENSE: "bg-red-500/10 text-red-500 border-red-500/20",
-      INVESTMENT: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-      SAVINGS: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    };
-    return colors[category] || "bg-muted text-muted-foreground";
+  const [isOpenMenu, setOpenMenu] = useState(false);
+  const [dataMenu, setMenuData] = useState<FolderType>();
+
+  const handleOpenMenu = (folder: FolderType) => {
+    setOpenMenu((prev) => !prev);
+    setMenuData(folder);
   };
 
-  const getFrequencyLabel = (frequency: string) => {
-    const labels: Record<string, string> = {
-      DAILY: "Diário",
-      WEEKLY: "Semanal",
-      MONTHLY: "Mensal",
-      YEARLY: "Anual",
-    };
-    return labels[frequency] || frequency;
+  const handleDelete = (folderId: string) => {
+    handleDeleteFolder(folderId);
+    setOpenMenu(false);
   };
+
+  useEffect(() => {
+    const title = "Pastas Recorrentes - Controle Financeiro Inteligente";
+    document.title = title;
+  }, []);
 
   if (isLoading) {
     return (
@@ -247,133 +244,16 @@ const RecurringFolders = () => {
                 folder.filteredTransactions.length > 0;
 
               return (
-                <Card
+                <FolderCard
                   key={folder.id}
-                  className={`bg-card border-border hover:border-primary/50 transition-all duration-200 cursor-pointer group ${
-                    !hasFilteredTransactions ? "opacity-60" : ""
-                  }`}
-                  style={
-                    folder.color
-                      ? {
-                          borderLeftWidth: "4px",
-                          borderLeftColor: folder.color,
-                        }
-                      : {}
-                  }
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-muted">
-                          <Folder className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-lg text-card-foreground group-hover:text-primary transition-colors">
-                            {folder.name}
-                          </CardTitle>
-                          <CardDescription className="text-xs mt-1">
-                            {getFrequencyLabel(folder.frequency)}
-                            {!hasFilteredTransactions &&
-                              selectedMonth !== "all" && (
-                                <span className="ml-2 text-amber-600">
-                                  • Sem transações neste período
-                                </span>
-                              )}
-                          </CardDescription>
-                        </div>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    {/* Category and Status */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge
-                        variant="outline"
-                        className={getCategoryColor(folder.category)}
-                      >
-                        {folder.category}
-                      </Badge>
-                      <Badge
-                        variant={folder.isActive ? "default" : "secondary"}
-                        className="text-xs"
-                      >
-                        {folder.isActive ? "Ativo" : "Inativo"}
-                      </Badge>
-                      {selectedMonth !== "current" &&
-                        selectedMonth !== "all" && (
-                          <Badge variant="outline" className="text-xs">
-                            {folder.filteredTransactions.length} transações
-                          </Badge>
-                        )}
-                    </div>
-
-                    {/* Description */}
-                    {folder.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {folder.description}
-                      </p>
-                    )}
-
-                    {/* Amount */}
-                    <div className="flex items-center justify-between pt-2 border-t border-border">
-                      <div className="flex items-center gap-2">
-                        {isPositive ? (
-                          <TrendingUp className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4 text-red-500" />
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {folder.filteredTransactions.length} transações
-                          {selectedMonth !== "all" && (
-                            <span className="ml-1">
-                              ({folder.transactions.length} total)
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span
-                          className={`text-lg font-bold ${
-                            isPositive ? "text-green-500" : "text-red-500"
-                          }`}
-                        >
-                          {formatCurrency(folder.filteredAmount)}
-                        </span>
-                        {selectedMonth !== "all" &&
-                          folder.filteredAmount !==
-                            folder.transactions.reduce(
-                              (sum, t) => sum + t.amount,
-                              0
-                            ) && (
-                            <p className="text-xs text-muted-foreground">
-                              Total:{" "}
-                              {formatCurrency(
-                                folder.transactions.reduce(
-                                  (sum, t) => sum + t.amount,
-                                  0
-                                )
-                              )}
-                            </p>
-                          )}
-                      </div>
-                    </div>
-
-                    {/* Last transaction date */}
-                    {folder.filteredTransactions.length > 0 && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Última neste período:{" "}
-                        {formatDate(
-                          folder.filteredTransactions[
-                            folder.filteredTransactions.length - 1
-                          ].date
-                        )}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                  folder={folder as unknown as FolderType}
+                  hasFilteredTransactions={hasFilteredTransactions}
+                  isPositive={isPositive}
+                  selectedMonth={selectedMonth}
+                  isPendentDelete={isPendentDelete}
+                  handleOpenMenu={handleOpenMenu}
+                  handleDeleteFolder={handleDeleteFolder}
+                />
               );
             })}
           </div>
@@ -406,6 +286,18 @@ const RecurringFolders = () => {
           </Card>
         )}
       </div>
+
+      {isOpenMenu && dataMenu && (
+        <DetailsModalFolder
+          folder={dataMenu}
+          isOpen={isOpenMenu}
+          handleDelete={handleDelete}
+          handleStatusFolder={handleIsActiveFolder}
+          isActive={isPendentisActive}
+          isDelete={isPendentDelete}
+          onClose={() => setOpenMenu(false)}
+        />
+      )}
     </div>
   );
 };

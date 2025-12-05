@@ -42,7 +42,7 @@ enum AccountType {
 
 model Transaction {
   id            String              @id @default(cuid())
-  amount        Float
+  amount        Float               @default(0)
   date          DateTime            @default(now())
   description   String?
   type          TransactionType     @default(INCOME)
@@ -61,12 +61,12 @@ model Transaction {
   originOfFixed Fixed?  @relation(name: "OriginTransaction")
 
   userId           String
-  user             User            @relation(fields: [userId], references: [id])
-  FinancialGoals   FinancialGoals? @relation(fields: [financialGoalsId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
+  FinancialGoals   FinancialGoals?   @relation(fields: [financialGoalsId], references: [id])
   financialGoalsId String?
   creditCardId     String?
-  creditCard       CreditCard?     @relation(fields: [creditCardId], references: [id])
-  BankAccount      BankAccount?    @relation(fields: [bankAccountId], references: [id])
+  creditCard       CreditCard?       @relation(fields: [creditCardId], references: [id])
+  BankAccount      BankAccount?      @relation(fields: [bankAccountId], references: [id])
   bankAccountId    String?
   recurringFolders RecurringFolder[] @relation("TransactionRecurringFolders")
 
@@ -79,7 +79,7 @@ model BankAccount {
   name          String
   bankName      String
   accountNumber String?
-  finalBalance  Float    @default(0)
+  finalBalance  Float       @default(0)
   balance       Float       @default(0)
   accountType   AccountType @default(CHECKING)
   isActive      Boolean     @default(true)
@@ -145,7 +145,6 @@ model FinancialGoals {
   @@index([month, year])
   @@index([bankAccountId])
 }
-
 
 model Salary {
   id          String    @id @default(cuid())
@@ -218,27 +217,25 @@ model CreditCard {
   @@map("credit_cards")
 }
 
-
 model RecurringFolder {
-  id          String    @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
   description String?
   category    CategoryEnum @default(OTHER)
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  frequency   Frequency @default(MONTHLY)
-  color      String? 
-  updatedAt   DateTime  @updatedAt
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  frequency   Frequency    @default(MONTHLY)
+  color       String?
+  updatedAt   DateTime     @updatedAt
 
-  userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
   transactions Transaction[] @relation("TransactionRecurringFolders")
 
   @@index([userId])
   @@map("recurringFolders")
 }
-
 
 enum TransactionType {
   INCOME
@@ -259,7 +256,6 @@ enum TransactionTypeFile {
   PDF
   NULL
 }
-
 
 enum CategoryEnum {
   TRANSPORTATION

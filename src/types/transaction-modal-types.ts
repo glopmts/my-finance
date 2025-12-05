@@ -1,4 +1,9 @@
-import { CategoryEnum, PaymentSource, TransactionType } from "@prisma/client";
+import {
+  CategoryEnum,
+  PaymentSource,
+  RecurringFolder,
+  TransactionType,
+} from "@prisma/client";
 
 export const PAYMENTSOURCE_TRANSLATIONS = {
   PIX: "Pix",
@@ -36,6 +41,7 @@ export type TransactionData = {
   category: CategoryEnum;
   paymentSource: PaymentSource;
   financialGoalsId?: string | null;
+  recurringFolders?: RecurringFolder;
 };
 
 export type PropsUser = {

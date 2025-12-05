@@ -1,13 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/formatS";
+import { formatDate } from "@/utils/formatDate";
+import { getFrequencyLabel } from "@/utils/infor-cards";
 import { Frequency } from "@prisma/client";
 import { CalendarDays, DollarSign, Repeat, TrendingUp } from "lucide-react";
-import { formatCurrency } from "../lib/formatS";
-import { formatDate } from "../utils/formatDate";
-import { getFrequencyLabel } from "../utils/infor-cards";
-import ProgressSpending from "./ProgressSpending";
-import { Button } from "./ui/button";
-import { Spinner } from "./ui/spinner";
+import ProgressSpending from "./../ProgressSpending";
+import { Button } from "./../ui/button";
+import { Spinner } from "./../ui/spinner";
 
 type SalaryData = {
   userId: string;

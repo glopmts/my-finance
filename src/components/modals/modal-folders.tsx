@@ -1,4 +1,3 @@
-// components/modal-folder.tsx
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -269,7 +268,7 @@ const ModalFolder = ({
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               onClick={() => setOpen(false)}
             >
               Cancelar

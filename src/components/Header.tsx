@@ -78,7 +78,7 @@ const Header = () => {
 
                     return (
                       <Button
-                        variant="secondary"
+                        variant="secondaryNav"
                         key={index}
                         className={cn(
                           "w-full justify-start relative overflow-hidden",
